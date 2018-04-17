@@ -1,0 +1,20 @@
+#include <iostream>
+#include <time.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <string>
+using namespace std;
+int main()
+{
+
+  time_t result = time(NULL);
+  char t[50];
+  memset(t,'\0', sizeof(t));
+  strcpy(t, asctime(gmtime(&result)));
+  string time = t;
+  time.pop_back();
+  cout << time.length() << endl;
+  cout << time << endl;
+  
+
+}

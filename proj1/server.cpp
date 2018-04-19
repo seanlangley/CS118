@@ -15,6 +15,8 @@
 #include <signal.h>  /* signal name macros, and the kill() prototype */
 #include <vector>
 #include <fstream>
+
+#include "server.h"
 using namespace std;
 
 
@@ -38,11 +40,11 @@ string get_time()
   return time;
 }
 
-void get_file(char *send)
+int get_file(char *send, string &file_name)
 {
   char *buffer = NULL;
   int length = 0;
-  ifstream is ("test.html", ifstream::binary);
+  ifstream is (file_name, ifstream::binary);
   if (is) {
     // get length of file:
     is.seekg (0, is.end);
@@ -68,7 +70,7 @@ void get_file(char *send)
 	printf("%c", buffer[i]);
       }
     */
-
+  
   }
 
   if(buffer != NULL)
@@ -76,9 +78,24 @@ void get_file(char *send)
   else
     send[0] = '\0';
 
-  return;
+  return length;
 
 }
+
+
+void parse_requests(vector<string> *requests, char *buffer)
+{
+  char *buffer_copy = new char[16000];
+  strcpy(buffer_copy, buffer);
+  char *file_name = strtok(buffer_copy, "/");
+  file_name = strtok(NULL, " ");
+  string file_name_str = file_name;
+  requests->push_back(file_name_str);
+
+  delete[] buffer_copy;
+
+}
+
 
 
 int main(int argc, char *argv[])
@@ -118,20 +135,34 @@ int main(int argc, char *argv[])
     char buffer[16000];
 
     memset(buffer, 0, 16000);  // reset memory
-
+    
     //read client's message
     n = read(newsockfd, buffer, 16000);
     if (n < 0) error("ERROR reading from socket");
     printf("%s\n", buffer);
+    
 
+    vector<string> requests;
+    parse_requests(&requests, buffer);
+
+
+    char file[5102];
+    int file_length = get_file(file, requests[0]);
+    if(file[0] == '\0')
+      error("Error getting file.");
+    string content_length = to_string(file_length);
+
+    
 
     //reply to client    
     vector<string> responses;
     responses.push_back("HTTP/1.1 200 OK\r\n");
-    responses.push_back("Connection: close\r\n");        
+    responses.push_back("Connection: keep-alive\r\n");        
     responses.push_back(get_time());
     responses.push_back("\r\n");
-    responses.push_back("Content-Length: 5102\r\n");
+    responses.push_back("Content-Length: ");
+    responses.push_back(content_length);
+    responses.push_back("\r\n");
     responses.push_back("Content-Type: text/html\r\n");
     responses.push_back("\r\n");    
         
@@ -143,12 +174,7 @@ int main(int argc, char *argv[])
 	if (n < 0) error("ERROR writing to socket");
       }
     
-    char file[5102];
-    get_file(file);
-    
 
-    if(file[0] == '\0')
-      error("Error getting file.");
 
 
     for(int i = 0; file[i] != '\0'; i++)

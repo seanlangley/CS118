@@ -1,6 +1,0 @@
-#include "Sock.h"
-
-Socket::Socket()
-{
-  return;
-}

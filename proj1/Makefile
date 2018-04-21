@@ -5,9 +5,13 @@ USERID=504661838
 
 default: server
 
-server: clean
-	$(CC) -o server $(CPPFLAGS) server.cpp
+server: clean server.o Sock.o
+	$(CC) -o server $(CPPFLAGS) server.o Sock.o
+server.o: server.cpp Sock.h Sock.cpp
+	$(CC) -c server.cpp
+Sock.o: Sock.h
+	$(CC) -c Sock.cpp
 
 clean:
-	rm -rf server
+	rm -rf server *.o
 

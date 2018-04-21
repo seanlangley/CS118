@@ -15,34 +15,25 @@
 #include <signal.h>  /* signal name macros, and the kill() prototype */
 #include <vector>
 #include <fstream>
+
+#include "server.h"
 using namespace std;
 
 
 void error(string msg)
 {
+  cout << "CALLED ERROR";
   const char *c_msg = msg.c_str();
   perror(c_msg);
   exit(1);
 }
 
-string get_time()
-{
 
-  time_t result = time(NULL);
-  char t[50];
-  memset(t,'\0', sizeof(t));
-  strcpy(t, asctime(gmtime(&result)));
-  string time = t;
-  time.pop_back();
-
-  return time;
-}
-
-void get_file(char *send)
+int get_file(char *send, char *file_name)
 {
   char *buffer = NULL;
   int length = 0;
-  ifstream is ("test.html", ifstream::binary);
+  ifstream is (file_name, ifstream::binary);
   if (is) {
     // get length of file:
     is.seekg (0, is.end);
@@ -51,24 +42,12 @@ void get_file(char *send)
 
     buffer = new char [length];
 
-
-
     // read data as a block:
-    is.read (buffer,length);
-    
-
+    is.read (buffer,length);    
     if(!is)
       error("Error reading File.");
     is.close();
-
-    // ...buffer contains the entire file...
-    /*Testing
-    for(int i = 0; i < length; i++)
-      {
-	printf("%c", buffer[i]);
-      }
-    */
-
+  
   }
 
   if(buffer != NULL)
@@ -76,10 +55,37 @@ void get_file(char *send)
   else
     send[0] = '\0';
 
-  return;
+  return length;
 
 }
 
+
+void parse_requests(char *file_name, char *file_ext, char *buffer)
+{
+  char *buffer_copy = new char[4096];
+  char *buffer_copy2 = new char[4096];
+  strcpy(buffer_copy, buffer);
+  strcpy(buffer_copy2, buffer);
+  
+  char *name = strtok(buffer_copy, "/");  
+  name = strtok(NULL, " ");
+  strcpy(file_name, name);
+  
+  char *type = strtok(buffer_copy2, "/");
+  type = strtok(NULL, ".");
+  type = strtok(NULL, " ");
+  //Instead of html, add text/html
+  //  requests->push_back(file_type);
+
+  if(strcmp(type, "html") == 0)
+    strcpy(file_ext, "text/html");
+  else if(strcmp(type, "jpg") == 0)
+    strcpy(file_ext, "image/jpg");
+  //  else if(strcmp(
+  delete[] buffer_copy;
+  delete[] buffer_copy2;
+
+}
 
 
 
@@ -120,50 +126,50 @@ int main(int argc, char *argv[])
     char buffer[16000];
 
     memset(buffer, 0, 16000);  // reset memory
-
+    
     //read client's message
     n = read(newsockfd, buffer, 16000);
     if (n < 0) error("ERROR reading from socket");
     printf("%s\n", buffer);
-
-
-    vector<string> requests;
-    get_requests(&requests);
     
 
-    //reply to client    
+
+    //Only need file name and extension
+    char file_name[64];
+    char file_ext[64];
+    parse_requests(file_name, file_ext, buffer);
+
+
+    char file[5102];
+    int file_length = get_file(file, file_name);
+    if(file[0] == '\0')
+      error("Error getting file.");
+    string content_length_str = to_string(file_length);
+    const char *content_length = content_length_str.c_str();
+    
+
+    //reply to client  
     vector<string> responses;
     responses.push_back("HTTP/1.1 200 OK\r\n");
-    responses.push_back("Connection: keep-alive\r\n");        
-    responses.push_back(get_time());
-    responses.push_back("\r\n");
-    responses.push_back("Content-Length: 5102\r\n");
     responses.push_back("Content-Type: text/html\r\n");
-    responses.push_back("\r\n");    
-        
-    
+    responses.push_back("Content-Length: ");
+    responses.push_back(content_length_str);
+    responses.push_back("\r\n\r\n");
+            
+
     for(unsigned long i = 0; i < responses.size(); i++)
       {
 	cout << responses[i];
-	n = write(newsockfd, &responses[i], sizeof(responses[i]));
-	if (n < 0) error("ERROR writing to socket");
+
+	n = send(newsockfd, responses[i].c_str(), responses[i].size(), 0);	
+	if(n < 0) error("abcd");
       }
-    
-    char file[5102];
-    get_file(file);
-    
 
-    if(file[0] == '\0')
-      error("Error getting file.");
+    cout << file << endl;
+    n = send(newsockfd, file, file_length, 0);
+    if(n < 0) error("ERROR writing to socket");    
+    cout << n << endl;
 
-
-    for(int i = 0; file[i] != '\0'; i++)
-      printf("%c", file[i]);
-    n = write(newsockfd, &file, sizeof(file));
-    if(n < 0) error("ERROR writing to socket");
-    
-
-    
     close(newsockfd);  // close connection
     close(sockfd);
 

@@ -1,135 +1,128 @@
-/* A simple server in the internet domain using TCP
-   The port number is passed as an argument
-   This version runs forever, forking off a separate
-   process for each connection
-*/
-#include <stdio.h>
-#include <sys/types.h>   // definitions of a number of data types used in socket.h and netinet/in.h
-#include <sys/socket.h>  // definitions of structures needed for sockets, e.g. sockaddr
-#include <netinet/in.h>  // constants and structures needed for internet domain addresses, e.g. sockaddr_in
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
-#include <iostream>
-#include <signal.h>  /* signal name macros, and the kill() prototype */
 #include <vector>
 #include <fstream>
-
+#include "Sock.h"
 #include "server.h"
 using namespace std;
 
 
 void error(string msg)
 {
+  cout << "CALLED ERROR";
   const char *c_msg = msg.c_str();
   perror(c_msg);
   exit(1);
 }
 
-string get_time()
+
+bool get_file(string &file, char *file_buf, string &file_name, int &length)
 {
-
-  time_t result = time(NULL);
-  char t[50];
-  memset(t,'\0', sizeof(t));
-  strcpy(t, asctime(gmtime(&result)));
-  string time = t;
-  time.pop_back();
-
-  return time;
-}
-
-int get_file(char *send, string &file_name)
-{
+  bool found = true;
   char *buffer = NULL;
-  int length = 0;
+  length = 0;
   ifstream is (file_name, ifstream::binary);
-  if (is) {
-    // get length of file:
+  //If the file isn't found, return the 404 file
+  if(!is)
+    {
+      ifstream ip ("not_found.html", ifstream::in);
+      ip.seekg(0, ip.end);
+      length = ip.tellg();
+      ip.seekg(0, ip.beg);
+      
+      buffer = new char[length];
+
+      ip.read(buffer, length);
+      if(!ip)
+	error("Error reading 404 File.");
+      ip.close();
+      found = false;
+		
+    }
+  //Otherwise, return the requested file
+  else if (is) {
     is.seekg (0, is.end);
     length = is.tellg();
     is.seekg (0, is.beg);
 
     buffer = new char [length];
 
-
-
-    // read data as a block:
-    is.read (buffer,length);
-    
-
+    is.read (buffer,length);    
     if(!is)
       error("Error reading File.");
     is.close();
 
-    // ...buffer contains the entire file...
-    /*Testing
-    for(int i = 0; i < length; i++)
-      {
-	printf("%c", buffer[i]);
-      }
-    */
-  
   }
 
-  if(buffer != NULL)
-    strcpy(send, buffer);
-  else
-    send[0] = '\0';
+  file_buf = new char[length];
 
-  return length;
+  strcpy(file_buf, buffer);
+
+  file = buffer;
+  return found;
 
 }
 
 
-void parse_requests(vector<string> *requests, char *buffer)
+void parse_requests(string &file_name, string &file_ext, char *buffer)
 {
-  char *buffer_copy = new char[16000];
+  char *buffer_copy = new char[4096];
+  char *buffer_copy2 = new char[4096];
   strcpy(buffer_copy, buffer);
-  char *file_name = strtok(buffer_copy, "/");
-  file_name = strtok(NULL, " ");
-  string file_name_str = file_name;
-  requests->push_back(file_name_str);
+  strcpy(buffer_copy2, buffer);
+  
+  char *name = strtok(buffer_copy, "/");  
+  name = strtok(NULL, " ");
+  file_name = name;
+  
+  char *type = strtok(buffer_copy2, "/");
+  type = strtok(NULL, ".");
+  type = strtok(NULL, " ");
+  //Instead of html, add text/html
+  //  requests->push_back(file_type);
 
+  if(strcmp(type, "html") == 0)
+    file_ext = "text/html";
+  else if(strcmp(type, "jpg") == 0)
+    file_ext = "image/jpg";
+  else if(strcmp(type, "gif") == 0)
+    file_ext = "image/gif";
   delete[] buffer_copy;
+  delete[] buffer_copy2;
 
 }
 
+void getoptions(int &portno, int argc, char *argv[])
+{
+  int c;
+  while((c = getopt(argc, argv, "p:")) != -1)
+  {
+   switch(c){
+      case 'p':
+        portno = atoi(optarg);
+        break;
+      case '?':
+        if(optopt == 'p')
+          fprintf(stderr,"Option -p requires a port number.\n");
+        else if(isprint(optopt))
+          exit(1);
+        else
+            fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
+        exit(1);
+        break;
+      default: abort();
+    }
+
+  }
+}
 
 
 int main(int argc, char *argv[])
 {
-    int sockfd, newsockfd, portno;
-    socklen_t clilen;
-    struct sockaddr_in serv_addr, cli_addr;
 
-    if (argc < 2) {
-        fprintf(stderr, "ERROR, no port provided\n");
-        exit(1);
-    }
+  int c;
+  int portno = 10101;  
+  getoptions(portno, argc, argv);
 
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);  // create socket
-    if (sockfd < 0)
-        error("ERROR opening socket");
-    memset((char *) &serv_addr, 0, sizeof(serv_addr));  // reset memory
-
-    // fill in address info
-    portno = atoi(argv[1]);
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(portno);
-
-    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
-        error("ERROR on binding");
-
-    listen(sockfd, 5);  // 5 simultaneous connection at most
-
-    //accept connections
-    newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-
-    if (newsockfd < 0)
-     error("ERROR on accept");
+    Socket mysock(portno);
 
     int n;
     char buffer[16000];
@@ -137,56 +130,73 @@ int main(int argc, char *argv[])
     memset(buffer, 0, 16000);  // reset memory
     
     //read client's message
-    n = read(newsockfd, buffer, 16000);
+    n = read(mysock.fd(), buffer, 16000);
     if (n < 0) error("ERROR reading from socket");
     printf("%s\n", buffer);
     
+    //Only need file name and extension
+    string file_name;
+    string  file_ext;
+   
+    parse_requests(file_name, file_ext, buffer);
 
-    vector<string> requests;
-    parse_requests(&requests, buffer);
 
-
-    char file[5102];
-    int file_length = get_file(file, requests[0]);
-    if(file[0] == '\0')
-      error("Error getting file.");
-    string content_length = to_string(file_length);
+    string file;
+    char *file_buf = NULL;
+     int file_length;
+    bool was_found = get_file(file, file_buf, file_name, file_length);    
+/*TODO: Figure out how to get file_buf as a copy of the input file, without previously
+knowing the length*/
 
     
 
-    //reply to client    
+    //reply to client  
     vector<string> responses;
-    responses.push_back("HTTP/1.1 200 OK\r\n");
-    responses.push_back("Connection: keep-alive\r\n");        
-    responses.push_back(get_time());
+    if(was_found) responses.push_back("HTTP/1.1 200 OK\r\n");    
+    else responses.push_back("HTTP/1.1 404 Not Found\r\n");
+
+    responses.push_back("Content-Type: ");
+    responses.push_back(file_ext);
     responses.push_back("\r\n");
     responses.push_back("Content-Length: ");
-    responses.push_back(content_length);
-    responses.push_back("\r\n");
-    responses.push_back("Content-Type: text/html\r\n");
-    responses.push_back("\r\n");    
-        
-    
-    for(unsigned long i = 0; i < responses.size(); i++)
-      {
-	cout << responses[i];
-	n = write(newsockfd, &responses[i], sizeof(responses[i]));
-	if (n < 0) error("ERROR writing to socket");
-      }
-    
-
-
-
-    for(int i = 0; file[i] != '\0'; i++)
-      printf("%c", file[i]);
-    n = write(newsockfd, &file, sizeof(file));
-    if(n < 0) error("ERROR writing to socket");
-    
+    responses.push_back(to_string(file.size()));
+    responses.push_back("\r\n\r\n");
 
     
-    close(newsockfd);  // close connection
-    close(sockfd);
+   for(unsigned long i = 0; i < responses.size(); i++)
+   {
+    	n = send(mysock.fd(), responses[i].c_str(), responses[i].size(), 0);	
+	   if(n < 0) error("Error writing to socket");
+   }
+
+    
+    
+       
+    if(file_ext == "text/html")
+    {
+      n = send(mysock.fd(), file.c_str(), file.size(), 0);
+      if(n < 0) error("ERROR writing to socket");    
+    }
+   
+
+   else if(file_ext == "image/jpg")
+   {
+    
+      n = send(mysock.fd(), file_buf, file_length, 0);
+   }
 
     return 0;
 
 }
+
+
+
+
+
+
+
+
+
+
+
+

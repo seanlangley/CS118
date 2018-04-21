@@ -17,7 +17,7 @@ class Socket{
   Socket(int port_no);
   ~Socket();
   void error(string msg);
-  int fd(){return newsockfd;}
+  inline int fd(){return newsockfd;}
  private:
   int sockfd, newsockfd, portno;
   socklen_t clilen;

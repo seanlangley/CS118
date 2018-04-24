@@ -1,7 +1,6 @@
 #include <vector>
 #include <fstream>
 #include "Sock.h"
-#include "server.h"
 using namespace std;
 
 
@@ -14,49 +13,58 @@ void error(string msg)
 }
 
 
-bool get_file(string &file, char *file_buf, string &file_name, int &length)
+bool get_file(string &file, string &file_name, int &length)
 {
-  bool found = true;
+  bool found = false;
   char *buffer = NULL;
+  file = "";
   length = 0;
-  ifstream is (file_name, ifstream::binary);
-  //If the file isn't found, return the 404 file
-  if(!is)
-    {
-      ifstream ip ("not_found.html", ifstream::in);
-      ip.seekg(0, ip.end);
-      length = ip.tellg();
-      ip.seekg(0, ip.beg);
-      
-      buffer = new char[length];
-
-      ip.read(buffer, length);
-      if(!ip)
-	error("Error reading 404 File.");
-      ip.close();
-      found = false;
-		
-    }
-  //Otherwise, return the requested file
-  else if (is) {
-    is.seekg (0, is.end);
-    length = is.tellg();
-    is.seekg (0, is.beg);
-
-    buffer = new char [length];
-
-    is.read (buffer,length);    
-    if(!is)
-      error("Error reading File.");
-    is.close();
+  
+  //Parse through the file name. If it has a %20, that means
+  //There's a space. Get rid of the %20 and replace it with a space.
+  for(int i = 0; i < file_name.size(); i++)
+  {
+    if(file_name[i] == '%' && file_name[i+1] == '2' && file_name[i+2] == '0')
+        {
+          file_name.erase(i, 3);
+          file_name.insert(i, " ");
+        }
 
   }
 
-  file_buf = new char[length];
+/****TODO Figure out how to open files such that it's case insensitive. 
+Test case e) from Zengwen's email.
+****/
 
-  strcpy(file_buf, buffer);
+  cout << "file name is " << file_name << endl;
 
-  file = buffer;
+  ifstream is;
+  is.open(file_name.c_str(), ifstream::in);
+  //If the file isn't found, return the 404 file
+  if(!is)
+    {
+          is.open("not_found.html", ifstream::in);
+          char c = is.get();
+          while(is.good())
+        {
+          file.push_back(c);
+          c = is.get();
+
+        }
+
+    }
+  //Otherwise, return the requested file
+  else if (is) {
+    char c = is.get();
+    while(is.good())
+    {
+      file.push_back(c);
+      c = is.get();
+
+    }
+    found = true;
+  }
+  is.close();
   return found;
 
 }
@@ -69,9 +77,22 @@ void parse_requests(string &file_name, string &file_ext, char *buffer)
   strcpy(buffer_copy, buffer);
   strcpy(buffer_copy2, buffer);
   
+
+
   char *name = strtok(buffer_copy, "/");  
   name = strtok(NULL, " ");
+
+  
+  // int i = 0;
+  // while(name[i] != '\0')
+  // {
+  //   name[i] = tolower(name[i]);
+  //   i++;
+  // }
+
+
   file_name = name;
+    
   
   char *type = strtok(buffer_copy2, "/");
   type = strtok(NULL, ".");
@@ -79,12 +100,14 @@ void parse_requests(string &file_name, string &file_ext, char *buffer)
   //Instead of html, add text/html
   //  requests->push_back(file_type);
 
-  if(strcmp(type, "html") == 0)
+  if(strcmp(type, "html") == 0 || strcmp(type, "htm") == 0)
     file_ext = "text/html";
-  else if(strcmp(type, "jpg") == 0)
+  else if(strcmp(type, "jpg") == 0 || strcmp(type, "jpeg") == 0)
     file_ext = "image/jpg";
   else if(strcmp(type, "gif") == 0)
     file_ext = "image/gif";
+  else
+    file_ext = "text/plain";
   delete[] buffer_copy;
   delete[] buffer_copy2;
 
@@ -119,8 +142,15 @@ int main(int argc, char *argv[])
 {
 
   int c;
-  int portno = 10101;  
-  getoptions(portno, argc, argv);
+  int portno;
+  //First command line argument contains the port number, 
+  //default port is 10101
+  if(argc == 2)
+    portno = atoi(argv[1]);
+  else
+    portno = 10101;  
+  //Add options here later potentially
+  //getoptions(portno, argc, argv);
 
     Socket mysock(portno);
 
@@ -132,6 +162,7 @@ int main(int argc, char *argv[])
     //read client's message
     n = read(mysock.fd(), buffer, 16000);
     if (n < 0) error("ERROR reading from socket");
+    cout << "\n*** Client Request ***\n\n";
     printf("%s\n", buffer);
     
     //Only need file name and extension
@@ -142,18 +173,18 @@ int main(int argc, char *argv[])
 
 
     string file;
-    char *file_buf = NULL;
      int file_length;
-    bool was_found = get_file(file, file_buf, file_name, file_length);    
-/*TODO: Figure out how to get file_buf as a copy of the input file, without previously
-knowing the length*/
-
-    
-
+    bool was_found = get_file(file, file_name, file_length);    
+   
+     
     //reply to client  
     vector<string> responses;
     if(was_found) responses.push_back("HTTP/1.1 200 OK\r\n");    
-    else responses.push_back("HTTP/1.1 404 Not Found\r\n");
+    else 
+      {
+        responses.push_back("HTTP/1.1 404 Not Found\r\n");
+        file_ext = "text/html";
+      }
 
     responses.push_back("Content-Type: ");
     responses.push_back(file_ext);
@@ -163,6 +194,8 @@ knowing the length*/
     responses.push_back("\r\n\r\n");
 
     
+
+
    for(unsigned long i = 0; i < responses.size(); i++)
    {
     	n = send(mysock.fd(), responses[i].c_str(), responses[i].size(), 0);	
@@ -172,18 +205,11 @@ knowing the length*/
     
     
        
-    if(file_ext == "text/html")
-    {
-      n = send(mysock.fd(), file.c_str(), file.size(), 0);
-      if(n < 0) error("ERROR writing to socket");    
-    }
+ 
+    n = send(mysock.fd(), file.c_str(), file.size(), 0);
    
-
-   else if(file_ext == "image/jpg")
-   {
+   
     
-      n = send(mysock.fd(), file_buf, file_length, 0);
-   }
 
     return 0;
 

@@ -13,52 +13,89 @@ void error(string msg)
   exit(1);
 }
 
+// bool get_file(string &file, char *file_buf, string &file_name, int &length)
+// {
+//   bool found = true;
+//   char *buffer = NULL;
+//   length = 0;
+//   ifstream is (file_name, ios::in | ifstream::binary);
+//   //If the file isn't found, return the 404 file
+//   if(!is)
+//     {
+//       ifstream ip ("not_found.html", ifstream::in);
+//       ip.seekg(0, ip.end);
+//       length = ip.tellg();
+//       ip.seekg(0, ip.beg);
+      
+//       buffer = new char[length];
+
+//       ip.read(buffer, length);
+//       if(!ip)
+// 	error("Error reading 404 File.");
+//       ip.close();
+//       found = false;
+		
+//     }
+//   //Otherwise, return the requested file
+//   else if (is) {
+//   	is.clear();
+//     is.seekg (0, is.end);
+// 	is.clear();
+//     length = is.tellg();
+//     is.clear();
+//     is.seekg (0, is.beg);
+//     // printf("Length: %d\n", length);
+
+//     buffer = new char [length];
+//     int x = is.read(buffer,length);
+//     printf("\n%d\n", x);			//ADDED THIS    
+//     if(!is)
+//       error("Error reading File.");
+//     is.close();
+
+//   }
+
+//   file_buf = new char[length];
+
+//   strcpy(file_buf, buffer);
+
+//   file = buffer;
+//   return found;
+
+// }
+
 
 bool get_file(string &file, char *file_buf, string &file_name, int &length)
 {
-  bool found = true;
-  char *buffer = NULL;
-  length = 0;
-  ifstream is (file_name, ifstream::binary);
-  //If the file isn't found, return the 404 file
-  if(!is)
-    {
-      ifstream ip ("not_found.html", ifstream::in);
-      ip.seekg(0, ip.end);
-      length = ip.tellg();
-      ip.seekg(0, ip.beg);
-      
-      buffer = new char[length];
+	//https://stackoverflow.com/questions/10750057/how-to-print-out-the-contents-of-a-vector
+	//https://stackoverflow.com/questions/5420317/reading-and-writing-binary-file
+	//https://stackoverflow.com/questions/30693515/copy-vectorchar-into-char
+	bool found = true;
+	int count = 0;
+    std::ifstream input( file_name, std::ios::binary );
+    // copies all data into buffer
+    std::vector<char> buffer((
+            std::istreambuf_iterator<char>(input)), 
+            (std::istreambuf_iterator<char>()));
+	for (std::vector<char>::const_iterator i = buffer.begin(); i != buffer.end(); ++i)
+	{
+		// std::cout << *i;
+		count++;
+	}
 
-      ip.read(buffer, length);
-      if(!ip)
-	error("Error reading 404 File.");
-      ip.close();
-      found = false;
-		
-    }
-  //Otherwise, return the requested file
-  else if (is) {
-    is.seekg (0, is.end);
-    length = is.tellg();
-    is.seekg (0, is.beg);
+	file_buf = new char[count];
 
-    buffer = new char [length];
+	// file_buf = &buffer[0];
 
-    is.read (buffer,length);    
-    if(!is)
-      error("Error reading File.");
-    is.close();
+	std::copy(buffer.begin(), buffer.end(), file_buf);
+	   	// printf("\nFile size: %lu\n", file_buf.size());
 
-  }
-
-  file_buf = new char[length];
-
-  strcpy(file_buf, buffer);
-
-  file = buffer;
-  return found;
-
+	// for (int i = 0; i < count; i++)
+	// {
+	// 	cout <<file_buf[i];
+	// }
+	file = file_buf;
+	return found;
 }
 
 
@@ -144,9 +181,13 @@ int main(int argc, char *argv[])
     string file;
     char *file_buf = NULL;
      int file_length;
-    bool was_found = get_file(file, file_buf, file_name, file_length);    
+    bool was_found = get_file(file, file_buf, file_name, file_length);
 /*TODO: Figure out how to get file_buf as a copy of the input file, without previously
 knowing the length*/
+
+    //CHAR * to STRING
+    // std::string file_buf_string(file_buf);
+    // cout << file_buf_string;
 
     
 
@@ -168,8 +209,6 @@ knowing the length*/
     	n = send(mysock.fd(), responses[i].c_str(), responses[i].size(), 0);	
 	   if(n < 0) error("Error writing to socket");
    }
-
-    
     
        
     if(file_ext == "text/html")
@@ -181,10 +220,11 @@ knowing the length*/
 
    else if(file_ext == "image/jpg")
    {
-    
-      n = send(mysock.fd(), file_buf, file_length, 0);
+   	// printf("\nFile size: %lu\n", file.size());
+      n = send(mysock.fd(), file.c_str(), file.size(), 0);
+      n = send(mysock.fd(), file.c_str()+4, file.size(), 0);
+      if(n < 0) error("ERROR writing to socket"); 
    }
-
     return 0;
 
 }

@@ -36,7 +36,6 @@ bool get_file(string &file, string &file_name, int &length)
 Test case e) from Zengwen's email.
 ****/
 
-  cout << "file name is " << file_name << endl;
 
   ifstream is;
   is.open(file_name.c_str(), ifstream::in);
@@ -64,6 +63,7 @@ Test case e) from Zengwen's email.
     }
     found = true;
   }
+
   is.close();
   return found;
 
@@ -82,18 +82,10 @@ void parse_requests(string &file_name, string &file_ext, char *buffer)
   char *name = strtok(buffer_copy, "/");  
   name = strtok(NULL, " ");
 
-  
-  // int i = 0;
-  // while(name[i] != '\0')
-  // {
-  //   name[i] = tolower(name[i]);
-  //   i++;
-  // }
-
-
   file_name = name;
-    
-  
+
+
+
   char *type = strtok(buffer_copy2, "/");
   type = strtok(NULL, ".");
   type = strtok(NULL, " ");
@@ -202,14 +194,8 @@ int main(int argc, char *argv[])
 	   if(n < 0) error("Error writing to socket");
    }
 
-    
-    
-       
- 
     n = send(mysock.fd(), file.c_str(), file.size(), 0);
    
-   
-    
 
     return 0;
 

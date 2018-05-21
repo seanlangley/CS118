@@ -1,0 +1,21 @@
+CC=g++
+CPPFLAGS=-g -Wall -Wextra
+USERID=504661838
+
+default: client server
+
+client: clean client.o Sock.o
+	$(CC) -o client $(CPPFLAGS) client.o Sock.o
+client.o: client.cpp Sock.h Sock.cpp
+	$(CC) -c client.cpp
+server: clean server.o Sock.o
+	$(CC) -o server $(CPPFLAGS) server.o Sock.o
+server.o: server.cpp Sock.h Sock.cpp
+	$(CC) -c server.cpp
+Sock.o: Sock.h
+	$(CC) -c Sock.cpp
+
+
+clean:
+	rm -rf server *.o
+

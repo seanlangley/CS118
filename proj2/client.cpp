@@ -19,9 +19,8 @@ int main(void)
 	TCP_client tcp(servIP);
 	tcp.initiate_connection();
 	
-	string file_name = "file.txt";
-	tcp.request_file(file_name);
-	tcp.recv_file();
+	//string file_name = "file.txt";
+	//tcp.request_file(file_name);
 
 
 	return 0;

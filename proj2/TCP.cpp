@@ -4,19 +4,12 @@
 #include <arpa/inet.h>
 #include <string>
 #include <string.h>
-#include <unistd.h>
-
 #include "TCP.h"
 using namespace std;
 
-TCP::~TCP()
-{
-  close(fd);
-}
-
 void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
 {
-  memset(&pkt, 0, sizeof(pkt));
+ // memset(&pkt, 0, sizeof(pkt));
   pkt.seq_num = sequence_number;
   pkt.ack_num = ack_number;
   /*If it's an ACK packet, let data be empty*/
@@ -44,11 +37,10 @@ void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
   }
 }
 
-
-void TCP::send_pkt(tcp_packet &pkt)
+void TCP::transmit_pkt(tcp_packet &pkt)
 {
   addrlen = sizeof(remaddr);
-  memset(&pkt, 0, sizeof(tcp_packet));
+
   if(sendto(fd, &pkt, sizeof(pkt), 0, 
     (struct sockaddr *)&remaddr, addrlen) ==-1) 
     fatal_error("sendto");
@@ -57,7 +49,7 @@ void TCP::send_pkt(tcp_packet &pkt)
 
 void TCP::recv_pkt(tcp_packet &pkt)
 { 
-    memset(&pkt, 0, sizeof(pkt));
+   // memset(&pkt, 0, sizeof(pkt));
     addrlen = sizeof(remaddr);
     int recvlen = recvfrom(fd, &pkt, sizeof(pkt), 0, 
     (struct sockaddr *)&remaddr, &addrlen);

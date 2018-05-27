@@ -15,3 +15,5 @@ Sock.o: Sock.h
 clean:
 	rm -rf server *.o
 
+dist:
+	tar zcvf 104584663.tar.gz cat.gif doge.jpg Makefile not_found.html README server.cpp Sock.cpp Sock.h test.html report.pdf

@@ -38,13 +38,13 @@ void TCP_client::initiate_connection()
 	/*Send the SYN*/
 	make_packet(pkt, SYN, "");
 	sequence_number++;
-	send_pkt(pkt);
+	transmit_pkt(pkt);
 	/*Receive the ACK, set the ACKNUM*/
 	recv_pkt(pkt);
     /*Send the SYN-ACK*/
     /*ACKs don't increase the seq_num*/
     make_packet(pkt, ACK, "");
-	send_pkt(pkt);
+	transmit_pkt(pkt);
 
 }
 
@@ -53,18 +53,14 @@ void TCP_client::request_file(string file_name)
 	cout << "Requesting file " << file_name << endl;
 	tcp_packet pkt;
 	make_packet(pkt, DATA, file_name);
-	printf("pkt.data is %s\n", pkt.data);
-	send_pkt(pkt);
+	transmit_pkt(pkt);
+	//memset(&pkt, 0, sizeof(pkt));
+
 	/*Wait for ACK*/
 	recv_pkt(pkt);
 }
 
-void TCP_client::recv_file()
-{
-	tcp_packet pkt;
-	recv_pkt(pkt);
-	cout << pkt.data << endl;
-}
+
 
 
 

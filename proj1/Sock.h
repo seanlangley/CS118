@@ -1,4 +1,3 @@
-
 #ifndef Sock
 #define Sock
 

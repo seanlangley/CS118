@@ -42,6 +42,7 @@ public:
 	TCP_client(std::string IP);
 	void initiate_connection();
 	string request_file(std::string file_name);
+	void teardown();
 private:
 	string servIP;
 };
@@ -52,8 +53,7 @@ public:
 	void initiate_connection();
 	string get_file_request();
 	void send_file(string file);
-private:
-
+	void teardown();
 };
 
 #endif

@@ -22,6 +22,8 @@ int main(void)
 	string file_name = "file.txt";
 	string file = tcp.request_file(file_name);
 	cout << file << endl;
+	cout << "Tearing down...\n";
+	tcp.teardown();
 
 
 	return 0;

@@ -71,6 +71,33 @@ void TCP_server::send_file(string file)
 	recv_pkt(pkt);
 }
 
+void TCP_server::teardown()
+{
+	/*Wait for FIN*/
+	tcp_packet pkt;
+	recv_pkt(pkt);
+	/*Send ACK*/
+	make_packet(pkt, ACK, "");
+	transmit_pkt(pkt);
+	/*Send FIN*/
+	make_packet(pkt, FIN, "");
+	transmit_pkt(pkt);
+	/*Wait for ACK*/
+	recv_pkt(pkt);
+	close(fd);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

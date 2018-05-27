@@ -21,6 +21,8 @@ int main(int argc, char **argv)
 	string file;
 	getfile(file, file_name);
 	tcp.send_file(file);
+	cout << "Tearing down...\n";
+	tcp.teardown();
 
 	
 }

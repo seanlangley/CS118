@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <string>
 #include <string.h>
+#include <unistd.h>
 #include "TCP.h"
 using namespace std;
 
@@ -70,7 +71,21 @@ string TCP_client::request_file(string file_name)
 }
 
 
-
+void TCP_client::teardown()
+{
+	/*Send FIN*/
+	tcp_packet pkt;
+	make_packet(pkt, FIN, "");
+	transmit_pkt(pkt);
+	/*Wait for ACK*/
+	recv_pkt(pkt);
+	/*Wait for FIN*/
+	recv_pkt(pkt);
+	/*Send ACK*/
+	make_packet(pkt, ACK, "");
+	transmit_pkt(pkt);
+	close(fd);
+}
 
 
 

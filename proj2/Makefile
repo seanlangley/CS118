@@ -1,19 +1,32 @@
 CC=g++
-CPPFLAGS=-g -Wall -Wextra
-USERID=504661838
+CFLAGS = -g -Wall -Wextra
 
-default: client server
 
-client: clean client.o 
-	$(CC) -o client $(CPPFLAGS) client.o 
-client.o: client.cpp helpers.h
+all: clean client server
+
+client: client.o TCP_client.o TCP.o
+	$(CC) -o client $(CFLAGS) client.o TCP_client.o TCP.o
+	
+TCP_client.o: TCP_client.cpp TCP.h helpers.h 
+	$(CC) -c TCP_client.cpp
+
+client.o: client.cpp TCP.h TCP_client.cpp helpers.h 
 	$(CC) -c client.cpp
-server: clean server.o 
-	$(CC) -o server $(CPPFLAGS) server.o 
-server.o: server.cpp  helpers.h
+
+server: server.o TCP_server.o TCP.o
+	$(CC) -o server $(CFLAGS) server.o TCP_server.o TCP.o
+
+TCP_server.o: TCP_server.cpp TCP.h helpers.h
+	$(CC) -c TCP_server.cpp
+
+server.o: server.cpp TCP.h TCP_server.cpp helpers.h
 	$(CC) -c server.cpp
 
 
-clean:
-	rm -rf client server *.o
+TCP.o: TCP.cpp TCP.h helpers.h
+	$(CC) -c TCP.cpp
 
+
+
+clean:
+	rm -f client server *.o 

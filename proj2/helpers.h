@@ -1,17 +1,22 @@
-#ifndef helpers
-#define helpers
+
 #include <fstream> 
+#include <iostream>
+#include <stdlib.h>
 using namespace std;
-void error(string msg)
+
+
+
+
+inline void fatal_error(string msg)
 {
-	cout << "CALLED ERROR" << endl;
+	cout << "FATAL ERROR" << endl;
 	
   	const char *c_msg = msg.c_str();
   	perror(c_msg);
   	exit(1);
 }
 
-void getfile(string &file, string &file_name)
+inline void getfile(string &file, string &file_name)
 {
   char *buffer = NULL;
   file = "";
@@ -20,7 +25,7 @@ void getfile(string &file, string &file_name)
   is.open(file_name.c_str(), ifstream::in);
   //If the file isn't found, return the 404 file
   if(!is)
-       error("Reqeusted file not found.");
+       fatal_error("Reqeusted file not found.");
   //Otherwise, return the requested file
   else if (is) {
     char c = is.get();
@@ -35,5 +40,3 @@ void getfile(string &file, string &file_name)
   is.close();
 
 }
-
-#endif

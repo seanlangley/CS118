@@ -19,8 +19,9 @@ int main(void)
 	TCP_client tcp(servIP);
 	tcp.initiate_connection();
 	
-	//string file_name = "file.txt";
-	//tcp.request_file(file_name);
+	string file_name = "file.txt";
+	string file = tcp.request_file(file_name);
+	cout << file << endl;
 
 
 	return 0;

@@ -48,16 +48,25 @@ void TCP_client::initiate_connection()
 
 }
 
-void TCP_client::request_file(string file_name)
+string TCP_client::request_file(string file_name)
 {
 	cout << "Requesting file " << file_name << endl;
 	tcp_packet pkt;
+
 	make_packet(pkt, DATA, file_name);
 	transmit_pkt(pkt);
-	//memset(&pkt, 0, sizeof(pkt));
-
 	/*Wait for ACK*/
 	recv_pkt(pkt);
+	/*Do something on ACK, not sure yet*/
+
+	/*Receive file*/
+	recv_pkt(pkt);
+	string ret = pkt.data;
+	/*Send the ACK*/
+	make_packet(pkt, ACK, "");
+	transmit_pkt(pkt);
+	return ret;
+
 }
 
 

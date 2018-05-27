@@ -4,7 +4,7 @@
 #include "helpers.h"
 #define BUFLEN 1024
 
-#define SERVICE_PORT  21234
+#define SERVICE_PORT  21235
 #define BUFSIZE 2048
 #define DATA 0x0
 #define SYN 0x2
@@ -41,7 +41,7 @@ class TCP_client : public TCP{
 public:
 	TCP_client(std::string IP);
 	void initiate_connection();
-	void request_file(std::string file_name);
+	string request_file(std::string file_name);
 private:
 	string servIP;
 };
@@ -51,6 +51,7 @@ public:
 	TCP_server();
 	void initiate_connection();
 	string get_file_request();
+	void send_file(string file);
 private:
 
 };

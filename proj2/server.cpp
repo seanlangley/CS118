@@ -16,11 +16,11 @@ int main(int argc, char **argv)
 {
 	TCP_server tcp;
 	tcp.initiate_connection();
-	//string file_name = tcp.get_file_request();
-	//printf("file name is %s\n", file_name.c_str());
-	// string file;
-	// getfile(file, file_name);
-	// cout << file << endl;
+	string file_name = tcp.get_file_request();
+	printf("file name is %s\n", file_name.c_str());
+	string file;
+	getfile(file, file_name);
+	tcp.send_file(file);
 
 	
 }

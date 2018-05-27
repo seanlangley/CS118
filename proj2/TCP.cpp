@@ -9,20 +9,21 @@ using namespace std;
 
 void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
 {
- // memset(&pkt, 0, sizeof(pkt));
+  memset(&pkt, 0, sizeof(pkt));
   pkt.seq_num = sequence_number;
   pkt.ack_num = ack_number;
   /*If it's an ACK packet, let data be empty*/
   pkt.flags &= 0x00;
   pkt.flags |= flags;
 
-  strcpy(pkt.data, data.c_str());
+  
   switch(flags)
   {
     case SYN:
       printf("Sending packet %d SYN\n", pkt.seq_num);
       break;
     case DATA:
+      strcpy(pkt.data, data.c_str());
       printf("Sending packet %d\n", pkt.seq_num);
       break;
     case FIN:
@@ -39,6 +40,7 @@ void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
 
 void TCP::transmit_pkt(tcp_packet &pkt)
 {
+
   addrlen = sizeof(remaddr);
 
   if(sendto(fd, &pkt, sizeof(pkt), 0, 
@@ -49,7 +51,7 @@ void TCP::transmit_pkt(tcp_packet &pkt)
 
 void TCP::recv_pkt(tcp_packet &pkt)
 { 
-   // memset(&pkt, 0, sizeof(pkt));
+    memset(&pkt, 0, sizeof(pkt));
     addrlen = sizeof(remaddr);
     int recvlen = recvfrom(fd, &pkt, sizeof(pkt), 0, 
     (struct sockaddr *)&remaddr, &addrlen);

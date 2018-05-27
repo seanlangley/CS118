@@ -55,13 +55,21 @@ string TCP_server::get_file_request()
 	file_name = pkt.data;
 
 	/*Send ACK*/
-	//memset(&pkt, 0, sizeof(pkt));
+	memset(&pkt, 0, sizeof(pkt));
 	transmit_pkt(pkt);
 
 	return file_name;
 }
 
-
+void TCP_server::send_file(string file)
+{
+	tcp_packet pkt;	
+	cout << "Sending file...\n";
+	make_packet(pkt, DATA, file);
+	transmit_pkt(pkt);
+	/*Wait for ACK*/
+	recv_pkt(pkt);
+}
 
 
 

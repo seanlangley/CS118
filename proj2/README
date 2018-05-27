@@ -1,3 +1,5 @@
+Sean Langley, Susan Krksharian
+
 This is a small program that demonstrates basic communication using UDP sockets.
 It's similar to the previous demo but here the server sends an acknowledegement message back to the sender.
 

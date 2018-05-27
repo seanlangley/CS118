@@ -2,11 +2,11 @@ CC=g++
 CFLAGS = -g -Wall -Wextra
 
 
-all: clean client server
+all: client server clean.o
 
 client: client.o TCP_client.o TCP.o
 	$(CC) -o client $(CFLAGS) client.o TCP_client.o TCP.o
-	
+
 TCP_client.o: TCP_client.cpp TCP.h helpers.h 
 	$(CC) -c TCP_client.cpp
 
@@ -30,3 +30,5 @@ TCP.o: TCP.cpp TCP.h helpers.h
 
 clean:
 	rm -f client server *.o 
+clean.o:
+	rm -f *.o

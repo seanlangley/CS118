@@ -34,6 +34,7 @@ public:
 	void transmit_pkt(tcp_packet &pkt);
 	void recv_pkt(tcp_packet &pkt);
 	void resize(char * arr);
+	void print_addr_info();
 protected:
 	/*Need 30720 sequence numbers, use uint_16 = 65535*/
 	uint16_t sequence_number;

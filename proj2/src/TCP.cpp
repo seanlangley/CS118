@@ -95,7 +95,18 @@ void TCP::resize(char * arr) {
 }
 
 
-
+void TCP::print_addr_info()
+{
+	char hostip[64];
+	char remip[64];
+	inet_ntop(AF_INET, &(hostaddr.sin_addr), hostip, 64);
+	inet_ntop(AF_INET, &(remaddr.sin_addr), remip, 64);
+	printf("Host port:%d\n", hostaddr.sin_port);
+	printf("Host IP:%s\n", hostip);
+	printf("Rem port:%d\n", hostaddr.sin_port);
+	printf("Rem IP:%s\n", hostip);
+	
+}
 
 
 

@@ -28,6 +28,7 @@ TCP_server::TCP_server()
 	memset((char *)&hostaddr, 0, sizeof(hostaddr));
 	hostaddr.sin_family = AF_INET;
 	hostaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	//hostaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	hostaddr.sin_port = htons(SERVICE_PORT);
 	if (bind(fd, (struct sockaddr *)&hostaddr, sizeof(hostaddr)) < 0) {
 	fatal_error("bind failed");
@@ -42,7 +43,9 @@ void TCP_server::initiate_connection()
 	cout << "Waiting for connection on " << SERVICE_PORT << endl;
 	tcp_packet pkt;
 	/*Wait for SYN*/
+	print_addr_info();
 	recv_pkt(pkt);
+	
 	/*SYNchronize ack number to received seq_num+1*/
 	ack_number = pkt.seq_num+1;
 	/*Send the SYN-ACK, use initual sequence number 0*/

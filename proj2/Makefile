@@ -26,6 +26,10 @@ server.o: server.cpp TCP.h TCP_server.cpp helpers.h
 TCP.o: TCP.cpp TCP.h helpers.h
 	$(CC) -c TCP.cpp
 
+check_s:
+	bash ./check_scripts/check_serv.sh
+check_c:
+	bash ./check_scripts/check_cli.sh
 
 
 clean:

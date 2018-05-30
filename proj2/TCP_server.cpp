@@ -9,6 +9,8 @@
 #include <string>
 #include <iostream>
 #include <string.h>
+#include <fstream> 
+#include <iostream>
 #include "TCP.h"
 using namespace std;
 
@@ -21,7 +23,7 @@ TCP_server::TCP_server()
 
 	/* bind the socket to any valid IP address and a specific port */
 
-	//memset((char *)&hostaddr, 0, sizeof(hostaddr));
+	memset((char *)&hostaddr, 0, sizeof(hostaddr));
 	hostaddr.sin_family = AF_INET;
 	hostaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	hostaddr.sin_port = htons(SERVICE_PORT);
@@ -71,6 +73,9 @@ void TCP_server::send_file(string file)
 	int data_size = 1010;
 	// printf("file size: %lu\n", file_size);
 	// char sub[1010];
+
+
+
 	while (file_size > 0)
 	{
 		// memset(sub, 0, sizeof(sub));
@@ -86,6 +91,8 @@ void TCP_server::send_file(string file)
 			// printf("%s\n", sub);
 			// make_packet(pkt, DATA, sub);
 			make_packet(pkt, DATA, file.substr(offset*data_size, data_size));
+
+
 			transmit_pkt(pkt);
 			file_size -= data_size;
 			offset++;
@@ -112,18 +119,7 @@ void TCP_server::send_file(string file)
 
 void TCP_server::teardown()
 {
-	// /*Wait for FIN*/
-	// tcp_packet pkt;
-	// recv_pkt(pkt);
-	// /*Send ACK*/
-	// make_packet(pkt, ACK, "");
-	// transmit_pkt(pkt);
-	// /*Send FIN*/
-	// make_packet(pkt, FIN, "");
-	// transmit_pkt(pkt);
-	// /*Wait for ACK*/
-	// recv_pkt(pkt);
-	// close(fd);
+
 		/*Send FIN*/
 	tcp_packet pkt;
 	make_packet(pkt, FIN, "");

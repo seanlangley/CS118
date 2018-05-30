@@ -20,8 +20,9 @@ struct tcp_packet{
   uint8_t flags;
   /*MAX data size is 1024 - header size*/
   // char data[1015];
-  char data[1011];
   uint32_t len_data;
+  char data[1011];
+  
 };
 
 

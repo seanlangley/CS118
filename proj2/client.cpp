@@ -13,16 +13,20 @@
 using namespace std;
 
 
-int main(void)
+int main(int argc, char *argv[])
 {
+	if(argc < 2)
+		fatal_error("No file name");
+	string file_name = argv[1];
+	cout << "file name is " << file_name << endl;
 	string servIP = "127.0.0.1";	/* change this to use a different server */
 	TCP_client tcp(servIP);
 	tcp.initiate_connection();
 	
-	string file_name = "input.txt";
-	// string file_name = "doge.jpg";
+	file_name = "input.txt";
+	//string file_name = "doge.jpg";
 	string file = tcp.request_file(file_name);
-	// std::ofstream out("output.jpg");
+	//std::ofstream out("output.jpg");
  //    out << file;
  //    out.close();
 	// cout << file << endl;

@@ -65,7 +65,7 @@ string TCP_client::request_file(string file_name)
 	string ret = "";
 	ofstream outfile;
   	outfile.open("output.txt", ios::binary | ios::out);
-  	// outfile.open("output.jpg", ios::binary | ios::out);
+  	//outfile.open("output.jpg", ios::binary | ios::out);
 	recv_pkt(pkt);
 	// printf("flags: %d\n", pkt.flags);
 

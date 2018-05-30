@@ -1,2 +1,2 @@
 #!/bin/bash
-./client input.txt
+./src/client input.txt

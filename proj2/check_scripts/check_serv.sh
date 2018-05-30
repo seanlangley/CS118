@@ -1,5 +1,5 @@
 #!/bin/bash
-./server
+./src/server
 diff input.txt output.txt >> output.diff
 FILESIZE=$(stat -f%z output.diff)
 if [ $FILESIZE -eq 0 ]

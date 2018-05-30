@@ -51,7 +51,7 @@ void TCP_client::initiate_connection()
 
 string TCP_client::request_file(string file_name)
 {
-	cout << "Requesting file " << file_name << endl;
+	printf("\n***Requesting file %s***\n", file_name.c_str());
 	tcp_packet pkt;
 
 	make_packet(pkt, DATA, file_name);
@@ -142,6 +142,7 @@ void TCP_client::teardown()
 
 
 		/*Wait for FIN*/
+	cout << "\n***Tearing down***\n";
 	tcp_packet pkt;
 	recv_pkt(pkt);
 	/*Send ACK*/

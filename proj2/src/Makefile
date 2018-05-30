@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS = -g -Wall -Wextra
+CFLAGS = -g -Wall -Wextra -pthread
 DIR = ./src
 
 all: client server clean.o

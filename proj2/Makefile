@@ -5,4 +5,4 @@ check_s:
 check_c:
 	bash ./check_scripts/check_cli.sh
 clean:
-	cd ./src && make clean
+	rm .DS_STORE && cd ./src && make clean

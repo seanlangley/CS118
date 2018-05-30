@@ -1,10 +1,14 @@
 #!/bin/bash
 ./src/server
+printf "\n*****RUNNING CHECK SCRIPT*****\n"
 diff input.txt output.txt >> output.diff
 FILESIZE=$(stat -f%z output.diff)
+
 if [ $FILESIZE -eq 0 ]
 then
-	echo "Files transmitted correctly"
+	printf "Files transmitted correctly\n"
+	rm output.diff
 else
-	echo "Files differ after transmission"
+	printf "Files differ after transmission, stored in output.diff\n"
+
 fi

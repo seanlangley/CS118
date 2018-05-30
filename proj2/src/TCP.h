@@ -35,8 +35,9 @@ public:
 	void recv_pkt(tcp_packet &pkt);
 	void resize(char * arr);
 protected:
-	int sequence_number;
-	int ack_number;
+	/*Need 30720 sequence numbers, use uint_16 = 65535*/
+	uint16_t sequence_number;
+	uint16_t ack_number;
 	int fd;
 	socklen_t addrlen;
 	struct sockaddr_in remaddr, hostaddr;
@@ -59,6 +60,7 @@ public:
 	string get_file_request();
 	void send_file(string file);
 	void teardown();
+	static void *receive_acks(void *args);
 };
 
 #endif

@@ -40,7 +40,7 @@ void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
       printf("Sending packet %d SYN ACK\n", pkt.seq_num);
       break;
     case ACK:
-      printf("Sending packet %d ACK\n", pkt.ack_num);
+      printf("Sending packet %d\n", pkt.ack_num);
 
   }
 }
@@ -53,6 +53,8 @@ void TCP::transmit_pkt(tcp_packet &pkt)
   if(sendto(fd, &pkt, sizeof(pkt), 0, 
     (struct sockaddr *)&remaddr, addrlen) ==-1) 
     fatal_error("sendto");
+
+  sequence_number++;
   
 }
 

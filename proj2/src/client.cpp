@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
 	if(argc < 2)
 		fatal_error("No file name");
 	string file_name = argv[1];
-	cout << "file name is " << file_name << endl;
 	string servIP = "127.0.0.1";	/* change this to use a different server */
 	TCP_client tcp(servIP);
 	tcp.initiate_connection();
@@ -30,7 +29,6 @@ int main(int argc, char *argv[])
  //    out << file;
  //    out.close();
 	// cout << file << endl;
-	cout << "Tearing down...\n";
 	tcp.teardown();
 	return 0;
 }

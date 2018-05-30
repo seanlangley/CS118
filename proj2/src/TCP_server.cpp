@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -11,6 +10,9 @@
 #include <string.h>
 #include <fstream> 
 #include <iostream>
+
+#include <pthread.h>
+
 #include "TCP.h"
 using namespace std;
 
@@ -34,13 +36,17 @@ TCP_server::TCP_server()
 }
 
 
+
 void TCP_server::initiate_connection()
 {
-	cout << "Waiting for SYN on port " << SERVICE_PORT << endl;
+	cout << "Waiting for connection on " << SERVICE_PORT << endl;
 	tcp_packet pkt;
 	/*Wait for SYN*/
 	recv_pkt(pkt);
-	/*Send the SYN-ACK*/
+	/*SYNchronize ack number to received seq_num+1*/
+	ack_number = pkt.seq_num+1;
+	/*Send the SYN-ACK, use initual sequence number 0*/
+	sequence_number = 0;
 	make_packet(pkt, SYNACK, "");
 	/*send the ACK*/
 	transmit_pkt(pkt);
@@ -52,7 +58,7 @@ string TCP_server::get_file_request()
 {
 	tcp_packet pkt;
 	string file_name;
-	cout << "Waiting for file request\n";
+	cout << "\n***Waiting for file request***\n";
 	recv_pkt(pkt);
 	file_name = pkt.data;
 
@@ -63,10 +69,17 @@ string TCP_server::get_file_request()
 	return file_name;
 }
 
+void *TCP_server::receive_acks(void *args)
+{
+	printf("Hello world\n");
+	return NULL;
+}
+
+
 void TCP_server::send_file(string file)
 {
-	tcp_packet pkt;
-	cout << "Sending file...\n";
+	tcp_packet out_pkt, in_pkt;
+	cout << "\n***Sending file***\n";
 	unsigned long file_size = file.size();
 	//Can send 1015B of data per packet
 	int offset = 0;
@@ -74,11 +87,16 @@ void TCP_server::send_file(string file)
 	// printf("file size: %lu\n", file_size);
 	// char sub[1010];
 
-
+	/*Create a thread to receive ACKS*/
+	pthread_t thread;
+	pthread_create(&thread, NULL, &TCP_server::receive_acks, NULL);
+	pthread_join(thread, NULL);
 
 	while (file_size > 0)
 	{
 		// memset(sub, 0, sizeof(sub));
+		
+
 		if (file_size > data_size)
 		{
 			// 	char sub[1010];
@@ -90,10 +108,13 @@ void TCP_server::send_file(string file)
 			// }
 			// printf("%s\n", sub);
 			// make_packet(pkt, DATA, sub);
-			make_packet(pkt, DATA, file.substr(offset*data_size, data_size));
+			make_packet(out_pkt, DATA, file.substr(offset*data_size, data_size));
 
 
-			transmit_pkt(pkt);
+			transmit_pkt(out_pkt);
+			/*Wait for ACK*/
+			recv_pkt(in_pkt);
+
 			file_size -= data_size;
 			offset++;
 		}
@@ -106,21 +127,22 @@ void TCP_server::send_file(string file)
 			// 	// sprintf(sub, "%02hhX", pkt.data[offset]);
 			// }
 			// make_packet(pkt, DATA, sub);
-			make_packet(pkt, DATA, file.substr(offset*data_size, file_size));
-			transmit_pkt(pkt);
-			make_packet(pkt, END, "");
-			transmit_pkt(pkt);
+			make_packet(out_pkt, DATA, file.substr(offset*data_size, file_size));
+			transmit_pkt(out_pkt);
+			make_packet(out_pkt, END, "");
+			transmit_pkt(out_pkt);
 			file_size = 0;
 		}
 	}
 	/*Wait for ACK*/
-	recv_pkt(pkt);
+	recv_pkt(in_pkt);
 }
 
 void TCP_server::teardown()
 {
 
 		/*Send FIN*/
+	cout << "\n***Tearing down***\n";
 	tcp_packet pkt;
 	make_packet(pkt, FIN, "");
 	transmit_pkt(pkt);

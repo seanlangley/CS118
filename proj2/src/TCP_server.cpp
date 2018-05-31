@@ -26,6 +26,7 @@ TCP_server::TCP_server()
 	/* bind the socket to any valid IP address and a specific port */
 
 	memset((char *)&hostaddr, 0, sizeof(hostaddr));
+	memset((char *)&remaddr, 0, sizeof(remaddr));
 	hostaddr.sin_family = AF_INET;
 	hostaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	//hostaddr.sin_addr.s_addr = inet_addr("127.0.0.1");

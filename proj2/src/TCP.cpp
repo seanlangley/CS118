@@ -49,10 +49,13 @@ void TCP::transmit_pkt(tcp_packet &pkt)
 {
 
   addrlen = sizeof(remaddr);
-
-  if(sendto(fd, &pkt, sizeof(pkt), 0, 
-    (struct sockaddr *)&remaddr, addrlen) ==-1) 
-    fatal_error("sendto");
+	int bytes_sent;
+	bytes_sent = sendto(fd, &pkt, sizeof(pkt), 0, 
+    (struct sockaddr *)&remaddr, addrlen);
+	printf("Bytes sent is %d\n", bytes_sent);
+	if(bytes_sent <= 0)
+		fatal_error("sendto");
+ 
 
   sequence_number++;
   
@@ -62,8 +65,10 @@ void TCP::recv_pkt(tcp_packet &pkt)
 { 
     memset(&pkt, 0, sizeof(pkt));
     addrlen = sizeof(remaddr);
+	printf("Receiving data\n");
     int recvlen = recvfrom(fd, &pkt, sizeof(pkt), 0, 
     (struct sockaddr *)&remaddr, &addrlen);
+	
     if (recvlen >= 0) {
             printf("Receiving packet %d\n", pkt.ack_num);
             ack_number = pkt.seq_num + 1;
@@ -103,8 +108,8 @@ void TCP::print_addr_info()
 	inet_ntop(AF_INET, &(remaddr.sin_addr), remip, 64);
 	printf("Host port:%d\n", hostaddr.sin_port);
 	printf("Host IP:%s\n", hostip);
-	printf("Rem port:%d\n", hostaddr.sin_port);
-	printf("Rem IP:%s\n", hostip);
+	printf("Rem port:%d\n", remaddr.sin_port);
+	printf("Rem IP:%s\n", remip);
 	
 }
 

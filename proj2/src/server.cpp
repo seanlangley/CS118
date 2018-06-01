@@ -24,9 +24,7 @@ int main(int argc, char **argv)
 	vector<tcp_packet> file_pkts;
 	/*Should contain all the packets ready to send*/
 	file_pkts = tcp.parse_file(file);
-	vector<tcp_packet>::iterator it;
-
-	tcp.send_file(file);
+	tcp.send_file(file_pkts);
 	tcp.teardown();
 
 	

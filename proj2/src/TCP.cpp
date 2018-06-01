@@ -21,9 +21,6 @@ void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
   
   switch(flags)
   {
-    case SYN:
-      printf("Sending packet %d SYN\n", pkt.seq_num);
-      break;
     case DATA:
       // memcpy (pkt.data, data.c_str(), strlen(data.c_str())+1 );     //CHANGED HERE
       // strcpy(pkt.data, data.c_str());
@@ -31,7 +28,19 @@ void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
       {
         pkt.data[i] = data[i];
       }
-      printf("Sending packet %d\n", pkt.seq_num);
+    break;
+  }
+}
+
+void TCP::transmit_pkt(tcp_packet &pkt)
+{
+   switch(pkt.flags)
+  {
+    case SYN:
+      printf("Sending packet %d SYN\n", pkt.seq_num);
+      break;
+    case DATA:
+   printf("Sending packet %d\n", pkt.seq_num);
       break;
     case FIN:
       printf("Sending packet %d FIN\n", pkt.seq_num);
@@ -41,13 +50,9 @@ void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
       break;
     case ACK:
       printf("Sending packet %d\n", pkt.ack_num);
+    break;
 
   }
-}
-
-void TCP::transmit_pkt(tcp_packet &pkt)
-{
-
   addrlen = sizeof(remaddr);
 	int bytes_sent;
 	bytes_sent = sendto(fd, &pkt, sizeof(pkt), 0, 

@@ -78,11 +78,10 @@ void *receive_acks(void *args)
 }
 
 
-void TCP_server::send_file(string file)
+void TCP_server::send_file(vector<tcp_packet> file_pkts)
 {
 	tcp_packet out_pkt, in_pkt;
 	cout << "\n***Sending file***\n";
-	unsigned long file_size = file.size();
 	//Can send 1015B of data per packet
 	int offset = 0;
 	int data_size = 1010;
@@ -94,34 +93,19 @@ void TCP_server::send_file(string file)
 	pthread_create(&thread, NULL, receive_acks, NULL);
 	pthread_join(thread, NULL);
 
-	while (file_size > 0)
+	vector<tcp_packet>::iterator it = file_pkts.begin();
+	while(it != file_pkts.end())
 	{
 		// memset(sub, 0, sizeof(sub));
-		
+		out_pkt = *it;
+		transmit_pkt(out_pkt);
+		/*Wait for ACK*/
+		recv_pkt(in_pkt);	
+		it++;
 
-		if (file_size > data_size)
-		{
-
-			make_packet(out_pkt, DATA, file.substr(offset*data_size, data_size));
-
-
-			transmit_pkt(out_pkt);
-			/*Wait for ACK*/
-			recv_pkt(in_pkt);
-
-			file_size -= data_size;
-			offset++;
-		}
-		else
-		{
-			// make_packet(pkt, DATA, sub);
-			make_packet(out_pkt, DATA, file.substr(offset*data_size, file_size));
-			transmit_pkt(out_pkt);
-			make_packet(out_pkt, END, "");
-			transmit_pkt(out_pkt);
-			file_size = 0;
-		}
 	}
+	make_packet(out_pkt, END, "");
+	transmit_pkt(out_pkt);
 	/*Wait for ACK*/
 	recv_pkt(in_pkt);
 }

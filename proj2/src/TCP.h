@@ -60,7 +60,7 @@ public:
 	TCP_server();
 	void initiate_connection();
 	string get_file_request();
-	void send_file(string file);
+	void send_file(vector<tcp_packet> file_pkts);
 	void teardown();
 	void parse_file();
 	vector<tcp_packet> parse_file(string file);

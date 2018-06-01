@@ -46,7 +46,7 @@ void TCP_server::initiate_connection()
 	/*Wait for SYN*/
 	print_addr_info();
 	recv_pkt(pkt);
-	
+	print_addr_info();
 	/*SYNchronize ack number to received seq_num+1*/
 	ack_number = pkt.seq_num+1;
 	/*Send the SYN-ACK, use initual sequence number 0*/

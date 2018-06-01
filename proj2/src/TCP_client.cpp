@@ -61,86 +61,28 @@ string TCP_client::request_file(string file_name)
 	/*Do something on ACK, not sure yet*/
 
 	/*Receive file*/
+	printf("\n***Receiving file***\n");
 	uint8_t fin_flag = 0x11;
 	string ret = "";
 	ofstream outfile;
   	outfile.open("output.txt", ios::binary | ios::out);
-  	//outfile.open("output.jpg", ios::binary | ios::out);
 	recv_pkt(pkt);
-	// printf("flags: %d\n", pkt.flags);
 
 	while ((fin_flag & pkt.flags) != 0x11)
 	{
-		outfile.write(pkt.data, pkt.len_data);		//pkt.len_data			sizeof(pkt.data)
-		// outfile << pkt.data;
-		// for (int i = 0; i < pkt.len_data; i++)
-		// {
-		// 	// if (pkt.data[i] == EOF)
-		// 	// {
-		// 	// 	printf("EOF\n");
-		// 	// 	break;
-		// 	// }
-		// 	outfile << pkt.data[i];
-		// }
-		make_packet(pkt, ACK, "");
-		transmit_pkt(pkt);
+		outfile.write(pkt.data, pkt.len_data);			
 		recv_pkt(pkt);
 	}
 
 	outfile.close();
-	// recv_pkt(pkt);
-	// string ret = pkt.data;
-	/*Send the ACK*/
-	make_packet(pkt, ACK, "");
-	transmit_pkt(pkt);
 	return ret;
 
-
-
-
-	// /*Receive file*/
-	// uint8_t fin_flag = 0x11;
-	// string ret = "";
-	// std::ofstream out("output.jpg");
-	// recv_pkt(pkt);
-	// // printf("flags: %d\n", pkt.flags);
-
-	// while ((fin_flag & pkt.flags) != 0x11)
-	// {
-	// 	out << pkt.data;
-	// 	make_packet(pkt, ACK, "");
-	// 	transmit_pkt(pkt);
-	// 	recv_pkt(pkt);
-	// }
-
-	// out.close();
-	// // recv_pkt(pkt);
-	// // string ret = pkt.data;
-	// /*Send the ACK*/
-	// make_packet(pkt, ACK, "");
-	// transmit_pkt(pkt);
-	// return ret;
 
 }
 
 
 void TCP_client::teardown()
 {
-	// /*Send FIN*/
-	// tcp_packet pkt;
-	// make_packet(pkt, FIN, "");
-	// transmit_pkt(pkt);
-	// /*Wait for ACK*/
-	// recv_pkt(pkt);
-	// /*Wait for FIN*/
-	// recv_pkt(pkt);
-	// /*Send ACK*/
-	// make_packet(pkt, ACK, "");
-	// transmit_pkt(pkt);
-	// close(fd);
-
-
-
 		/*Wait for FIN*/
 	cout << "\n***Tearing down***\n";
 	tcp_packet pkt;

@@ -63,51 +63,54 @@ string TCP_server::get_file_request()
 	cout << "\n***Waiting for file request***\n";
 	recv_pkt(pkt);
 	file_name = pkt.data;
-
-	/*Send ACK*/
-	memset(&pkt, 0, sizeof(pkt));
-	transmit_pkt(pkt);
-
 	return file_name;
 }
 
-void *receive_acks(void *args)
-{
-	printf("Hello world\n");
+struct thread_args{
+	TCP_server *arg1;
+	size_t arg2;
+};
+
+void *receive_acks(void *arg)
+{	
+	struct thread_args *args = (struct thread_args*) arg;
+	TCP_server *serv = (TCP_server *) args->arg1;
+	size_t num_packs = (size_t) args->arg2;
+	tcp_packet ack;	
+	for(int k = 0; k < num_packs; k++)
+	{
+		serv->recv_pkt(ack);
+	}
 	return NULL;
 }
 
 
+
+
 void TCP_server::send_file(vector<tcp_packet> file_pkts)
 {
-	tcp_packet out_pkt, in_pkt;
+	tcp_packet out_pkt;
 	cout << "\n***Sending file***\n";
-	//Can send 1015B of data per packet
-	int offset = 0;
-	int data_size = 1010;
-	// printf("file size: %lu\n", file_size);
-	// char sub[1010];
 
 	/*Create a thread to receive ACKS*/
+	struct thread_args args;
+	args.arg1 = this;
+	args.arg2 = file_pkts.size();
 	pthread_t thread;
-	pthread_create(&thread, NULL, receive_acks, NULL);
-	pthread_join(thread, NULL);
+	pthread_create(&thread, NULL, receive_acks, &args);
 
 	vector<tcp_packet>::iterator it = file_pkts.begin();
 	while(it != file_pkts.end())
 	{
-		// memset(sub, 0, sizeof(sub));
 		out_pkt = *it;
 		transmit_pkt(out_pkt);
-		/*Wait for ACK*/
-		recv_pkt(in_pkt);	
 		it++;
-
 	}
 	make_packet(out_pkt, END, "");
 	transmit_pkt(out_pkt);
-	/*Wait for ACK*/
-	recv_pkt(in_pkt);
+	pthread_join(thread, NULL);
+
+
 }
 
 std::vector<tcp_packet> TCP_server::parse_file(string file)
@@ -142,7 +145,7 @@ std::vector<tcp_packet> TCP_server::parse_file(string file)
 void TCP_server::teardown()
 {
 
-		/*Send FIN*/
+	/*Send FIN*/
 	cout << "\n***Tearing down***\n";
 	tcp_packet pkt;
 	make_packet(pkt, FIN, "");
@@ -158,23 +161,6 @@ void TCP_server::teardown()
 }
 
 
-
-
-
-
-
-			// sub = file.c_str() + (offset * data_size);		//added
-			
-			// char target[2000];
-			// strncpy(target, sub, data_size);
-			// target[1000] = '\0'; // IMPORTANT!
-
-
-			// sub = file.c_str() + (offset * data_size);		//added
-
-			// char target[2000];
-			// strncpy(target, sub, data_size);
-			// target[1000] = '\0'; // IMPORTANT!
 
 
 

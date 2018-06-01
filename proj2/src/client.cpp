@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <string>
 #include <iostream>
+#include <vector>
+
 #include "TCP.h"
 using namespace std;
 
@@ -22,13 +24,9 @@ int main(int argc, char *argv[])
 	TCP_client tcp(servIP);
 	tcp.initiate_connection();
 	
-	file_name = "input.txt";
-	//string file_name = "doge.jpg";
+
 	string file = tcp.request_file(file_name);
-	//std::ofstream out("output.jpg");
- //    out << file;
- //    out.close();
-	// cout << file << endl;
+	
 	tcp.teardown();
 	return 0;
 }

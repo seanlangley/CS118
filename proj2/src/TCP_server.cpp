@@ -10,7 +10,7 @@
 #include <string.h>
 #include <fstream> 
 #include <iostream>
-
+#include <vector>
 #include <pthread.h>
 
 #include "TCP.h"
@@ -44,9 +44,7 @@ void TCP_server::initiate_connection()
 	cout << "Waiting for connection on " << SERVICE_PORT << endl;
 	tcp_packet pkt;
 	/*Wait for SYN*/
-	print_addr_info();
 	recv_pkt(pkt);
-	print_addr_info();
 	/*SYNchronize ack number to received seq_num+1*/
 	ack_number = pkt.seq_num+1;
 	/*Send the SYN-ACK, use initual sequence number 0*/
@@ -73,7 +71,7 @@ string TCP_server::get_file_request()
 	return file_name;
 }
 
-void *TCP_server::receive_acks(void *args)
+void *receive_acks(void *args)
 {
 	printf("Hello world\n");
 	return NULL;
@@ -93,7 +91,7 @@ void TCP_server::send_file(string file)
 
 	/*Create a thread to receive ACKS*/
 	pthread_t thread;
-	pthread_create(&thread, NULL, &TCP_server::receive_acks, NULL);
+	pthread_create(&thread, NULL, receive_acks, NULL);
 	pthread_join(thread, NULL);
 
 	while (file_size > 0)
@@ -103,15 +101,7 @@ void TCP_server::send_file(string file)
 
 		if (file_size > data_size)
 		{
-			// 	char sub[1010];
-			// for (int i = 0; offset < data_size; offset++, i++)
-			// {
-			// 	// printf("%c\n", pkt.data[offset]);
-			// 	// sub[i] = pkt.data[offset];
-			// 	sprintf(sub, "%02hhX", pkt.data[offset]);
-			// }
-			// printf("%s\n", sub);
-			// make_packet(pkt, DATA, sub);
+
 			make_packet(out_pkt, DATA, file.substr(offset*data_size, data_size));
 
 
@@ -124,12 +114,6 @@ void TCP_server::send_file(string file)
 		}
 		else
 		{
-			// 	char sub[1010];
-			// for (int i = 0; offset < data_size; offset++, i++)
-			// {
-			// 	sub[i] = pkt.data[offset];
-			// 	// sprintf(sub, "%02hhX", pkt.data[offset]);
-			// }
 			// make_packet(pkt, DATA, sub);
 			make_packet(out_pkt, DATA, file.substr(offset*data_size, file_size));
 			transmit_pkt(out_pkt);
@@ -140,6 +124,35 @@ void TCP_server::send_file(string file)
 	}
 	/*Wait for ACK*/
 	recv_pkt(in_pkt);
+}
+
+std::vector<tcp_packet> TCP_server::parse_file(string file)
+{
+	unsigned long file_size = file.size();
+	int offset = 0;
+	int data_size = 1010;
+	vector<tcp_packet> file_pkts;
+	tcp_packet pkt;
+	while (file_size > 0)
+	{
+		if (file_size > data_size)
+		{
+			make_packet(pkt, DATA, file.substr(offset*data_size, data_size));
+			file_pkts.push_back(pkt);
+			
+			file_size -= data_size;
+			offset++;
+		}
+		else
+		{
+
+			make_packet(pkt, DATA, file.substr(offset*data_size, file_size));
+			file_pkts.push_back(pkt);
+			make_packet(pkt, END, "");
+			file_size = 0;
+		}
+	}
+	return file_pkts;
 }
 
 void TCP_server::teardown()

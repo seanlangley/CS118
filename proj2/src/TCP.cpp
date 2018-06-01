@@ -52,7 +52,6 @@ void TCP::transmit_pkt(tcp_packet &pkt)
 	int bytes_sent;
 	bytes_sent = sendto(fd, &pkt, sizeof(pkt), 0, 
     (struct sockaddr *)&remaddr, addrlen);
-	printf("Bytes sent is %d\n", bytes_sent);
 	if(bytes_sent <= 0)
 		fatal_error("sendto");
  

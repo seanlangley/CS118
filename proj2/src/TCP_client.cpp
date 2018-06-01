@@ -29,7 +29,6 @@ TCP_client::TCP_client(string IP)
 	remaddr.sin_family = AF_INET;
 	remaddr.sin_port = htons(SERVICE_PORT);
 	remaddr.sin_addr.s_addr = inet_addr(IP.c_str());
-	print_addr_info();
 
 
 }
@@ -41,7 +40,6 @@ void TCP_client::initiate_connection()
 	make_packet(pkt, SYN, "");
 	sequence_number++;
 	transmit_pkt(pkt);
-	print_addr_info();
 	/*Receive the ACK, set the ACKNUM*/
 	recv_pkt(pkt);
     /*Send the SYN-ACK*/

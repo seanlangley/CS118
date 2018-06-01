@@ -25,6 +25,7 @@ struct tcp_packet{
   
 };
 
+void *receive_akcs(void *args);
 
 class TCP{
 public:
@@ -61,7 +62,8 @@ public:
 	string get_file_request();
 	void send_file(string file);
 	void teardown();
-	static void *receive_acks(void *args);
+	void parse_file();
+	vector<tcp_packet> parse_file(string file);
 };
 
 #endif

@@ -72,7 +72,9 @@ void TCP::recv_pkt(tcp_packet &pkt)
       /*Every time you receive a data packet, send the ACK packet*/
       case DATA:
         printf("Receiving DATA packet %d\n", pkt.seq_num);
+
         ack_number = pkt.seq_num+1;
+        
         tcp_packet ack;
         make_packet(ack, ACK, "");
         transmit_pkt(ack);
@@ -84,6 +86,9 @@ void TCP::recv_pkt(tcp_packet &pkt)
         break;
       case SYN:
         printf("Receiving SYN packet %d\n", pkt.seq_num);
+        break;
+      case SYNACK:
+        printf("Receiving ACK packet %d\n", pkt.ack_num);
         break;
     }
             

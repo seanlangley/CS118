@@ -66,10 +66,7 @@ string TCP_server::get_file_request()
 	return file_name;
 }
 
-struct thread_args{
-	TCP_server *arg1;
-	size_t arg2;
-};
+
 
 void *receive_acks(void *arg)
 {	
@@ -77,10 +74,9 @@ void *receive_acks(void *arg)
 	TCP_server *serv = (TCP_server *) args->arg1;
 	size_t num_packs = (size_t) args->arg2;
 	tcp_packet ack;	
+
 	for(int k = 0; k < num_packs; k++)
-	{
 		serv->recv_pkt(ack);
-	}
 	return NULL;
 }
 
@@ -113,6 +109,28 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 
 }
 
+
+
+void TCP_server::teardown()
+{
+
+	/*Send FIN*/
+	cout << "\n***Tearing down***\n";
+	tcp_packet pkt;
+	make_packet(pkt, FIN, "");
+	transmit_pkt(pkt);
+	/*Wait for ACK*/
+	recv_pkt(pkt);
+	/*Wait for FIN*/
+	recv_pkt(pkt);
+	/*Send ACK*/
+	make_packet(pkt, ACK, "");
+	transmit_pkt(pkt);
+	close(fd);
+}
+
+
+
 std::vector<tcp_packet> TCP_server::parse_file(string file)
 {
 	unsigned long file_size = file.size();
@@ -135,32 +153,11 @@ std::vector<tcp_packet> TCP_server::parse_file(string file)
 
 			make_packet(pkt, DATA, file.substr(offset*data_size, file_size));
 			file_pkts.push_back(pkt);
-			make_packet(pkt, END, "");
 			file_size = 0;
 		}
 	}
 	return file_pkts;
 }
-
-void TCP_server::teardown()
-{
-
-	/*Send FIN*/
-	cout << "\n***Tearing down***\n";
-	tcp_packet pkt;
-	make_packet(pkt, FIN, "");
-	transmit_pkt(pkt);
-	/*Wait for ACK*/
-	recv_pkt(pkt);
-	/*Wait for FIN*/
-	recv_pkt(pkt);
-	/*Send ACK*/
-	make_packet(pkt, ACK, "");
-	transmit_pkt(pkt);
-	close(fd);
-}
-
-
 
 
 

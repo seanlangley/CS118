@@ -35,15 +35,11 @@ TCP_client::TCP_client(string IP)
 
 void TCP_client::initiate_connection()
 {	
+	/*SYN-ACK-SYNACK*/
 	tcp_packet pkt;
-	/*Send the SYN*/
 	make_packet(pkt, SYN, "");
-	sequence_number++;
 	transmit_pkt(pkt);
-	/*Receive the ACK, set the ACKNUM*/
 	recv_pkt(pkt);
-    /*Send the SYN-ACK*/
-    /*ACKs don't increase the seq_num*/
     make_packet(pkt, ACK, "");
 	transmit_pkt(pkt);
 

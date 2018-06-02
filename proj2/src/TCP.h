@@ -25,6 +25,13 @@ struct tcp_packet{
   
 };
 
+class TCP_server;
+
+struct thread_args{
+	TCP_server *arg1;
+	size_t arg2;
+};
+
 void *receive_akcs(void *args);
 
 class TCP{

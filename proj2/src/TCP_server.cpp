@@ -12,6 +12,7 @@
 #include <iostream>
 #include <vector>
 #include <pthread.h>
+#include <ctime>
 
 #include "TCP.h"
 using namespace std;
@@ -20,6 +21,9 @@ TCP_server::TCP_server()
 {
 	sequence_number = 10;
 	ack_number = 0;
+	base = 0;
+	nextseqnum = 0;
+	N = 5;
 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		fatal_error("cannot create socket\n");
 
@@ -75,6 +79,8 @@ void *receive_acks(void *arg)
 	size_t num_packs = (size_t) args->arg2;
 	tcp_packet ack;	
 
+	
+	
 	for(int k = 0; k < num_packs; k++)
 		serv->recv_pkt(ack);
 	return NULL;
@@ -109,7 +115,16 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 
 }
 
+void TCP_server::rdt_send(vector<tcp_packet> file_pkts)
+{
+	if(nextseqnum < base + N)
+	{
+		transmit_pkt(file_pkts[nextseqnum]);
+		if(base == nextseqnum)
+			timer = clock();
 
+	}
+}
 
 void TCP_server::teardown()
 {

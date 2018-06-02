@@ -71,6 +71,14 @@ public:
 	void teardown();
 	void parse_file();
 	vector<tcp_packet> parse_file(string file);
+
+	void rdt_send(vector<tcp_packet> file_pkts);
+private:
+	int base;
+	int nextseqnum;
+	int N;
+	clock_t timer;
+
 };
 
 #endif

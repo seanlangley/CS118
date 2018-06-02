@@ -1,7 +1,7 @@
 #!/bin/bash
 ./src/server
 printf "\n*****RUNNING CHECK SCRIPT*****\n"
-diff input.txt output.txt >> output.diff
+diff file.txt output.txt >> output.diff
 FILESIZE=$(stat -f%z output.diff)
 
 if [ $FILESIZE -eq 0 ]

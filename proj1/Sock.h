@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string>
+#include <string.h>
 #include <iostream>
 #include <ctype.h>
 using namespace std;

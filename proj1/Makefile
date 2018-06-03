@@ -1,5 +1,5 @@
 CC=g++
-CPPFLAGS=-g -Wall -Wextra
+CPPFLAGS=-g -Wall -Wextra -std=c++11
 USERID=504661838
 
 

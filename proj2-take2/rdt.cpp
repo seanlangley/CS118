@@ -94,8 +94,8 @@ string rdt::rdt_send(string data)
 		udt_send(sndpkt[nextseqnum]);
 
 		/*Add timer here*/
-		// if(base == nextseqnum)
-		// 	timer = clock();
+		if(base == nextseqnum)
+			timer = clock();
 		nextseqnum++;
 		return "";
 		

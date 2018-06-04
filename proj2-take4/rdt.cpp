@@ -130,28 +130,3 @@ void rdt::udt_send(tcp_packet pkt)
 	if(bytes_sent <= 0)
 		fatal_error("sendto");
 }
-
-clock_t rdt::get_start()
-{
-	return start;
-}
-
-clock_t rdt::get_stop()
-{
-	return stop;
-}
-
-void rdt::set_start(clock_t time)
-{
-	start = time;
-}
-
-void rdt::set_stop(clock_t time)
-{
-	stop = time;
-}
-
-void timeout()
-{
-    return;
-}

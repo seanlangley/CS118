@@ -13,10 +13,10 @@
 #define END 0x11
 #define MSS 1020
 
-struct tcp_packet{
+struct tcp_packet
+{
   uint32_t seq_num;
   char data[MSS];
-  
 };
 
 
@@ -33,15 +33,20 @@ public:
 	tcp_packet make_pkt(int seqnum, std::string data);
 	inline uint32_t getnextseqnum(){return nextseqnum;}
 	inline uint8_t getbase(){return base;}
+	clock_t get_start();
+	clock_t get_stop();
+	void set_start(clock_t time);
+	void set_stop(clock_t time);
+    void timeout();
 private:
 	int fd;
 	socklen_t addrlen;
 	struct sockaddr_in remaddr, hostaddr;
 	uint32_t expectedseqnum, nextseqnum, base;
 	uint8_t N;
-	clock_t tmer;
+	clock_t start;
+	clock_t stop;
 	std::vector<tcp_packet> sndpkt;
-
 };
 
 #endif

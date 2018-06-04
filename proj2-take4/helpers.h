@@ -1,11 +1,7 @@
-
 #include <fstream> 
 #include <iostream>
 #include <stdlib.h>
 using namespace std;
-
-
-
 
 inline void fatal_error(string msg)
 {

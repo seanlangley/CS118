@@ -13,10 +13,30 @@
 #include "helpers.h"
 using namespace std;
 
+// pthread_mutex_t start_mutex;
+// pthread_mutex_t stop_mutex;
+
+// void* timeout(void*)
+// {
+// 	return NULL;
+// }
 
 int main(int argc, char **argv)
 {
 	rdt sender;
+
+	// pthread_t for_timeout;
+	// int rc = pthread_create(&for_timeout, NULL, timeout, NULL);
+
+	// Timeout Initialization
+	// pthread_mutex_lock(&start_mutex);
+	sender.set_start(clock());
+
+	// pthread_mutex_lock(&stop_mutex);
+	sender.set_stop(sender.get_start());
+	// pthread_mutex_unlock(&start_mutex);
+	// pthread_mutex_unlock(&stop_mutex);
+
 	sender.send_init();
 	string file_name = "file.txt";
 	string file;
@@ -42,9 +62,4 @@ int main(int argc, char **argv)
 			while(confirm == data)
 				confirm = sender.rdt_send(data);
 		}
-	
-
-
-
-	
 }

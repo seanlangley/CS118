@@ -45,11 +45,11 @@ void TCP_client::initiate_connection()
 
 }
 
-string TCP_client::request_file(string file_name)
+void TCP_client::request_file(string file_name)
 {
 	printf("\n***Requesting file %s***\n", file_name.c_str());
 	tcp_packet pkt;
-
+	vector<tcp_packet> received_packets;
 	make_packet(pkt, DATA, file_name);
 	transmit_pkt(pkt);
 	/*Wait for ACK*/
@@ -59,21 +59,47 @@ string TCP_client::request_file(string file_name)
 	/*Receive file*/
 	printf("\n***Receiving file***\n");
 	uint8_t fin_flag = 0x11;
-	string ret = "";
+
 	ofstream outfile;
   	outfile.open("output.jpg", ios::binary);
-	recv_pkt(pkt);
 
+	recv_pkt(pkt);
+	received_packets.push_back(pkt);
+	int o = 0, p = 1;
+	
+	
+
+	
 	while ((fin_flag & pkt.flags) != 0x11)
 	{
-		outfile.write(pkt.data, pkt.len_data);			
 		recv_pkt(pkt);
-
+		received_packets.push_back(pkt);
 	}
 
-	outfile.close();
-	return ret;
+	/*Organize the packets by sequence number*/
 
+	vector<tcp_packet>::iterator it = received_packets.begin();
+
+
+	/*Find the file's lowest sequence number, 
+	in case the first packet is sent out of order*/
+	int first_seq_num = it->seq_num;
+	it++;
+	for(; it != received_packets.end(); it++)
+		if(it->seq_num < first_seq_num)
+			first_seq_num = it->seq_num;
+
+
+	/*Write to the file in the right order*/
+	for(int k = 0; k < received_packets.size(); k++)
+		for(it = received_packets.begin(); it != received_packets.end(); it++)
+			if(it->seq_num == first_seq_num)
+			{	
+				outfile.write(it->data, it->len_data);
+				first_seq_num++;
+				break;
+			}
+	outfile.close();
 
 }
 

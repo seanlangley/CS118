@@ -9,9 +9,10 @@
 #define SERVICE_PORT  21235
 #define BUFSIZE 2048
 #define DATA 0x0
-#define SYN 0x2
+#define SYN 0x02
 #define ACK 0x10
 #define SYNACK 0x12
+#define RETRANS 0x80
 #define FIN 0x1
 #define END 0x11
 
@@ -23,7 +24,7 @@ typedef std::chrono::duration<float> fsec;
 struct tcp_packet{
   uint32_t seq_num;
   uint32_t ack_num;
-  /*ACK=3, SYN=6, FIN=7, etc...*/
+  /*ACK=3, SYN=6, FIN=7, RETRANS = 1*/
   uint8_t flags;
   uint32_t len_data;
   char data[1011];
@@ -44,7 +45,7 @@ struct thread_args{
 	size_t arg2;
 };
 
-void *receive_akcs(void *args);
+
 
 class TCP{
 public:
@@ -71,6 +72,8 @@ protected:
 	struct sockaddr_in remaddr, hostaddr;
 	std::vector<packet_meta> packet_meta_data;
 	bool all_acked;
+	unsigned int window_size;
+	unsigned int base;
 	
 };
 
@@ -78,10 +81,11 @@ class TCP_client : public TCP{
 public:
 	TCP_client(std::string IP);
 	void initiate_connection();
-	string request_file(std::string file_name);
+	void request_file(std::string file_name);
 	void teardown();
 private:
 	string servIP;
+
 };
 
 class TCP_server: public TCP{
@@ -91,7 +95,6 @@ public:
 	string get_file_request();
 	void send_file(vector<tcp_packet> file_pkts);
 	void teardown();
-	void parse_file();
 	vector<tcp_packet> parse_file(string file);
 
 	inline uint32_t get_num_packets()

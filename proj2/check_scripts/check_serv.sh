@@ -1,6 +1,7 @@
 #!/bin/bash
 ./src/server
 printf "\n*****RUNNING CHECK SCRIPT*****\n"
+rm output.diff
 diff doge.jpg output.jpg >> output.diff
 FILESIZE=$(stat -f%z output.diff)
 

@@ -25,6 +25,8 @@ TCP_server::TCP_server()
 	sequence_number = 10;
 	ack_number = 0;
 	all_acked = false;
+	window_size = 10;
+	base = 0;
 
 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		fatal_error("cannot create socket\n");
@@ -87,6 +89,7 @@ void *receive_acks(void *arg)
 	{
 		serv->recv_pkt(ack);
 		serv->set_acks(ack.ack_num);
+		/***TODO: Change the base***/
 		if(ack.ack_num -1 == serv->get_num_packets())
 			serv->set_all_acked();
 	}
@@ -96,6 +99,10 @@ void *receive_acks(void *arg)
 
 void *manage_timeouts(void *arg)
 {
+	/*Go through the entire list of packets
+	If a packet wasn't acked, check its transmission time
+	If its time is greater than RTO, retransmit and
+	reset the transmission time*/
 	ms RTO = ms(1000);
 	while(1)
 	{	
@@ -113,8 +120,9 @@ void *manage_timeouts(void *arg)
    			ms d = std::chrono::duration_cast<ms>(fs);
 			if(d.count()  > RTO.count())
 			{
-				printf("Retransmitting packet %d\n", it->pkt->seq_num);
 				tcp_packet pkt = *(it->pkt);
+				pkt.flags |= RETRANS;
+				it->time_sent = Time::now();
 				serv->transmit_pkt(pkt);
 			}
 		}
@@ -126,10 +134,10 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 {
 
 	vector<tcp_packet>::iterator it = file_pkts.begin();
+	base = it->seq_num;
 	for(; it != file_pkts.end(); it++)
-	{
 		packet_meta_data.push_back(make_meta(&(*it)));
-	}
+
 	tcp_packet out_pkt;
 	cout << "\n***Sending file***\n";
 
@@ -143,20 +151,36 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 	pthread_create(&ack_thread, NULL, receive_acks, &args);
 	pthread_create(&timeout_thread, NULL, manage_timeouts, this);
 
+
 	for(int k = 0; k < file_pkts.size(); k++)
 	{
 
+
 		out_pkt = file_pkts[k];
-		packet_meta_data[k].time_sent = Time::now();
-		transmit_pkt(out_pkt);
+		if(out_pkt.seq_num < base + window_size)
+		{
+			packet_meta_data[k].time_sent = Time::now();
+			transmit_pkt(out_pkt);
+		}
+		else
+			while(true)
+			{
+				this_thread::sleep_for(chrono::milliseconds(250));
+				if(out_pkt.seq_num < base + window_size)
+				{
+					packet_meta_data[k].time_sent = Time::now();
+					transmit_pkt(out_pkt);
+				}
+			}
+
+			/***TODO: Wait until the base moves forward***/
+		
 	}
 
 
 	/*Wait for all packets to be acked*/	
 	while(all_acked == false)
-	{
 		this_thread::sleep_for(chrono::milliseconds(250));
-	}
 		
 	make_packet(out_pkt, END, "");
 	transmit_pkt(out_pkt);

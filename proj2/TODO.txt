@@ -1,3 +1,0 @@
-- recv_pkt() needs to do different things depending on the flags
-If it's a ACK packet, the sequence number should stay the same
-If it's a data packet, increase the ack number

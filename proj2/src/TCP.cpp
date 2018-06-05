@@ -39,6 +39,9 @@ void TCP::transmit_pkt(tcp_packet &pkt)
 {
    switch(pkt.flags)
   {
+    case RETRANS: 
+      printf("Sending DATA packet %d Retransmission\n", pkt.seq_num);
+      break;
     case SYN:
       printf("Sending SYN packet %d\n", pkt.seq_num);
       break;

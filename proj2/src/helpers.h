@@ -18,12 +18,11 @@ inline void fatal_error(string msg)
 
 inline void getfile(string &file, string &file_name)
 {
-  char *buffer = NULL;
+
   file = "";
   
   ifstream is;
-  is.open(file_name.c_str(), ifstream::in);
-  //If the file isn't found, return the 404 file
+  is.open(file_name.c_str(), ios::in | ios::binary);
   if(!is)
        fatal_error("Requested file not found.");
   //Otherwise, return the requested file
@@ -37,11 +36,7 @@ inline void getfile(string &file, string &file_name)
     }
   }
 
+  
   is.close();
-
-    // ofstream of;
-    // of.open("out.jpg", ios::binary | ios::out);
-    // of.write(file.c_str(), file.length());   //sizeof(pkt.data)
-    // of.close();
 
 }

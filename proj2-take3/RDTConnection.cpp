@@ -356,8 +356,9 @@ bool RDTConnection::send_data( std::string const &data ) {
             current_window = (current_window + 1) % necessary_windows;
 
             std::stringstream ss;
-            ss << "Preparing to transmit packet with SEQ " << pkt.header.seq_num << " and payload " << current_packet_size;
-            ss << " - Current window has " << current_unacknowledged_bytes << " of " << window_size;
+            ss << "Sending packet " << pkt.header.seq_num << " " << window_size;
+            // ss << "Sending packet " << pkt.header.seq_num << " and payload " << current_packet_size;
+            // ss << " - Current window has " << current_unacknowledged_bytes << " of " << window_size;
             log_event(ss.str());
             broadcast_network_packet(pkt);
         }
@@ -413,7 +414,7 @@ bool RDTConnection::send_data( std::string const &data ) {
                 drop_packet(pkt, "expected ACK and received non-ACK packet.");
             } else {
                 std::stringstream ss;
-                ss << "Received ACK " << pkt.header.ack_num;
+                ss << "Receiving packet " << pkt.header.ack_num;
                 log_event(ss.str());
 
                 if (pkt.header.ack_num > current_unacknowledged_bytes + total_acknowledged_bytes) {
@@ -430,9 +431,9 @@ bool RDTConnection::send_data( std::string const &data ) {
                         if (!windows[i].is_acked && windows[i].seq_num <= pkt.header.ack_num) {
                             windows[i].is_acked = true;
 
-                            std::stringstream ss;
-                            ss << "Marking " << pkt.header.ack_num << " as ACKED.";
-                            log_event(ss.str());
+                            // std::stringstream ss;
+                            // ss << "Marking " << pkt.header.ack_num << " as ACKED.";
+                            // log_event(ss.str());
                         }
                     }
                     total_acknowledged_bytes = pkt.header.ack_num;
@@ -494,7 +495,7 @@ bool RDTConnection::receive_data( std::string &data ) {
             build_network_packet(response_pkt, "");
 
             std::stringstream ss;
-            ss << "ACK " << pkt.header.seq_num;
+            ss << "Sending packet " << pkt.header.seq_num;
             log_event(ss.str());
 
             response_pkt.header.ack_num = pkt.header.seq_num;
@@ -730,11 +731,7 @@ void RDTConnection::drop_packet(rdt_packet_t &pkt, std::string const &reason) {
 }
 
 void RDTConnection::log_event(std::string const &msg) {
-    time_t now;
-    char date[32];
 
-    time(&now);
-    strftime( date, sizeof(date), "%D %T: ", localtime(&now));
 
-    std::cerr << date << msg << std::endl;
+    std::cerr << msg << std::endl;
 }

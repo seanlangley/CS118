@@ -20,10 +20,13 @@ int main(int argc, char **argv)
 	string file_name = tcp.get_file_request();
 	string file;
 	getfile(file, file_name);
-
+  	
 	vector<tcp_packet> file_pkts;
+	
 	/*Should contain all the packets ready to send*/
 	file_pkts = tcp.parse_file(file);
+	vector<tcp_packet>::iterator it = file_pkts.begin();
+
 	tcp.send_file(file_pkts);
 	tcp.teardown();
 

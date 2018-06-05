@@ -23,10 +23,7 @@ int main(int argc, char *argv[])
 	string servIP = "127.0.0.1";	/* change this to use a different server */
 	TCP_client tcp(servIP);
 	tcp.initiate_connection();
-	
-
 	string file = tcp.request_file(file_name);
-	
 	tcp.teardown();
 	return 0;
 }

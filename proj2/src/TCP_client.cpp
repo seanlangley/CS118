@@ -61,13 +61,14 @@ string TCP_client::request_file(string file_name)
 	uint8_t fin_flag = 0x11;
 	string ret = "";
 	ofstream outfile;
-  	outfile.open("output.txt", ios::binary | ios::out);
+  	outfile.open("output.jpg", ios::binary);
 	recv_pkt(pkt);
 
 	while ((fin_flag & pkt.flags) != 0x11)
 	{
 		outfile.write(pkt.data, pkt.len_data);			
 		recv_pkt(pkt);
+
 	}
 
 	outfile.close();

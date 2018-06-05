@@ -187,7 +187,7 @@ int main(int argc, char **argv)
 
 	initialize();
 	send_init();
-	string file_name = "file.txt";
+	string file_name = "input.txt";
 	string file;
 	getfile(file, file_name);
 	uint32_t offset = 0;

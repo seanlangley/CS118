@@ -2,6 +2,8 @@
 #define TCP_H
 
 #include "helpers.h"
+#include <vector>
+
 #define BUFLEN 1024
 
 #define SERVICE_PORT  21235
@@ -13,17 +15,27 @@
 #define FIN 0x1
 #define END 0x11
 
+typedef std::chrono::high_resolution_clock Time;
+typedef std::chrono::milliseconds ms;
+typedef std::chrono::duration<float> fsec;
+
+
 struct tcp_packet{
   uint32_t seq_num;
   uint32_t ack_num;
   /*ACK=3, SYN=6, FIN=7, etc...*/
   uint8_t flags;
-  /*MAX data size is 1024 - header size*/
-  // char data[1015];
   uint32_t len_data;
   char data[1011];
   
 };
+
+struct packet_meta{
+	struct tcp_packet *pkt;
+	Time::time_point time_sent;
+	bool was_acked;
+};
+
 
 class TCP_server;
 
@@ -38,11 +50,18 @@ class TCP{
 public:
 	TCP(){return;}
 	virtual ~TCP(){return;}
-	void make_packet(tcp_packet &pkt, uint32_t flags, string data);			//string data
+	void make_packet(tcp_packet &pkt, uint32_t flags, string data);	
+	packet_meta make_meta(tcp_packet *pkt);
 	void transmit_pkt(tcp_packet &pkt);
 	void recv_pkt(tcp_packet &pkt);
 	void resize(char * arr);
 	void print_addr_info();
+	void set_acks(uint32_t acknum);
+	inline std::vector<packet_meta> *get_packet_meta()
+			{return &packet_meta_data;}
+	inline void set_all_acked()
+			{all_acked = true;}
+	
 protected:
 	/*Need 30720 sequence numbers, use uint_16 = 65535*/
 	uint16_t sequence_number;
@@ -50,6 +69,9 @@ protected:
 	int fd;
 	socklen_t addrlen;
 	struct sockaddr_in remaddr, hostaddr;
+	std::vector<packet_meta> packet_meta_data;
+	bool all_acked;
+	
 };
 
 class TCP_client : public TCP{
@@ -72,12 +94,12 @@ public:
 	void parse_file();
 	vector<tcp_packet> parse_file(string file);
 
-	void rdt_send(vector<tcp_packet> file_pkts);
+	inline uint32_t get_num_packets()
+			{return num_packets;}
 private:
-	int base;
-	int nextseqnum;
-	int N;
 	clock_t timer;
+	uint32_t num_packets;
+
 
 };
 

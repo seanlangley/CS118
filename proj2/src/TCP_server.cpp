@@ -13,17 +13,19 @@
 #include <vector>
 #include <pthread.h>
 #include <ctime>
+#include <chrono>
+#include <thread>
 
 #include "TCP.h"
 using namespace std;
 
 TCP_server::TCP_server()
-{
+
+{	
 	sequence_number = 10;
 	ack_number = 0;
-	base = 0;
-	nextseqnum = 0;
-	N = 5;
+	all_acked = false;
+
 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		fatal_error("cannot create socket\n");
 
@@ -82,15 +84,52 @@ void *receive_acks(void *arg)
 	
 	
 	for(int k = 0; k < num_packs; k++)
+	{
 		serv->recv_pkt(ack);
+		serv->set_acks(ack.ack_num);
+		if(ack.ack_num -1 == serv->get_num_packets())
+			serv->set_all_acked();
+	}
 	return NULL;
 }
 
 
+void *manage_timeouts(void *arg)
+{
+	ms RTO = ms(1000);
+	while(1)
+	{	
+		this_thread::sleep_for(chrono::milliseconds(3000));
+		TCP_server *serv = (TCP_server *) arg;
+		vector<packet_meta>::iterator it;
+		vector<packet_meta> *server_meta_data = serv->get_packet_meta();
 
+		for(it = server_meta_data->begin(); it != server_meta_data->end(); it++)
+		{
+			if(it->was_acked == true)
+				continue;
+			Time::time_point now = Time::now();
+			fsec fs = now - it->time_sent;
+   			ms d = std::chrono::duration_cast<ms>(fs);
+			if(d.count()  > RTO.count())
+			{
+				printf("Retransmitting packet %d\n", it->pkt->seq_num);
+				tcp_packet pkt = *(it->pkt);
+				serv->transmit_pkt(pkt);
+			}
+		}
+	}	
+	return NULL;
+}
 
 void TCP_server::send_file(vector<tcp_packet> file_pkts)
 {
+
+	vector<tcp_packet>::iterator it = file_pkts.begin();
+	for(; it != file_pkts.end(); it++)
+	{
+		packet_meta_data.push_back(make_meta(&(*it)));
+	}
 	tcp_packet out_pkt;
 	cout << "\n***Sending file***\n";
 
@@ -98,33 +137,36 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 	struct thread_args args;
 	args.arg1 = this;
 	args.arg2 = file_pkts.size();
-	pthread_t thread;
-	pthread_create(&thread, NULL, receive_acks, &args);
 
-	vector<tcp_packet>::iterator it = file_pkts.begin();
-	while(it != file_pkts.end())
+	pthread_t ack_thread;
+	pthread_t timeout_thread;
+	pthread_create(&ack_thread, NULL, receive_acks, &args);
+	pthread_create(&timeout_thread, NULL, manage_timeouts, this);
+
+	for(int k = 0; k < file_pkts.size(); k++)
 	{
-		out_pkt = *it;
+
+		out_pkt = file_pkts[k];
+		packet_meta_data[k].time_sent = Time::now();
 		transmit_pkt(out_pkt);
-		it++;
 	}
+
+
+	/*Wait for all packets to be acked*/	
+	while(all_acked == false)
+	{
+		this_thread::sleep_for(chrono::milliseconds(250));
+	}
+		
 	make_packet(out_pkt, END, "");
 	transmit_pkt(out_pkt);
-	pthread_join(thread, NULL);
+	pthread_join(ack_thread, NULL);
+
+	pthread_kill(timeout_thread, 0);
 
 
 }
 
-void TCP_server::rdt_send(vector<tcp_packet> file_pkts)
-{
-	if(nextseqnum < base + N)
-	{
-		transmit_pkt(file_pkts[nextseqnum]);
-		if(base == nextseqnum)
-			timer = clock();
-
-	}
-}
 
 void TCP_server::teardown()
 {
@@ -153,10 +195,16 @@ std::vector<tcp_packet> TCP_server::parse_file(string file)
 	int data_size = 1010;
 	vector<tcp_packet> file_pkts;
 	tcp_packet pkt;
+
+
+	
+	vector<tcp_packet>::iterator it;
 	while (file_size > 0)
 	{
 		if (file_size > data_size)
-		{
+		{	
+			
+
 			make_packet(pkt, DATA, file.substr(offset*data_size, data_size));
 			file_pkts.push_back(pkt);
 			
@@ -165,12 +213,14 @@ std::vector<tcp_packet> TCP_server::parse_file(string file)
 		}
 		else
 		{
-
+			
 			make_packet(pkt, DATA, file.substr(offset*data_size, file_size));
+
 			file_pkts.push_back(pkt);
 			file_size = 0;
 		}
 	}
+	num_packets = file_pkts.size();
 	return file_pkts;
 }
 

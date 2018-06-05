@@ -21,9 +21,18 @@ void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
   {
     case DATA:
       sequence_number++;
-      strcpy(pkt.data, data.c_str());
+      memcpy(pkt.data, data.c_str(), pkt.len_data);
       break;
   }
+}
+
+packet_meta TCP::make_meta(tcp_packet *pkt)
+{
+  packet_meta ret;
+  memset(&ret, 0, sizeof(ret));
+  ret.pkt = pkt;
+  ret.was_acked = false;
+  return ret;
 }
 
 void TCP::transmit_pkt(tcp_packet &pkt)
@@ -123,7 +132,12 @@ void TCP::print_addr_info()
 	
 }
 
-
+void TCP::set_acks(uint32_t acknum)
+{
+  vector<packet_meta>::iterator it = packet_meta_data.begin();
+  for(; it != packet_meta_data.end(); it++)
+    it->was_acked = true;
+}
 
 
 

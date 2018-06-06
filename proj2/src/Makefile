@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS = -g -Wall -Wextra -pthread
+CFLAGS = -g -Wall -Wextra -lpthread
 DIR = ./src
 
 all: client server clean.o
@@ -25,8 +25,6 @@ server.o: server.cpp TCP.h TCP_server.cpp helpers.h
 
 TCP.o: TCP.cpp TCP.h helpers.h
 	$(CC) -c TCP.cpp
-
-
 
 
 clean:

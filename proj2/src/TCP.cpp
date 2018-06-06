@@ -10,7 +10,7 @@ using namespace std;
 void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
 {
   memset(&pkt, 0, sizeof(pkt));
-  pkt.seq_num = sequence_number;
+  pkt.seq_num = seq_number;
   pkt.ack_num = ack_number;
   /*If it's an ACK packet, let data be empty*/
   pkt.flags &= 0x00;
@@ -20,7 +20,7 @@ void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
   switch(flags)
   {
     case DATA:
-      sequence_number++;
+      seq_number++;
       memcpy(pkt.data, data.c_str(), pkt.len_data);
       break;
   }
@@ -37,6 +37,7 @@ packet_meta TCP::make_meta(tcp_packet *pkt)
 
 void TCP::transmit_pkt(tcp_packet &pkt)
 {
+  
    switch(pkt.flags)
   {
     case RETRANS: 
@@ -52,13 +53,14 @@ void TCP::transmit_pkt(tcp_packet &pkt)
       printf("Sending FIN packet %d\n", pkt.seq_num);
       break;
     case SYNACK:
-      printf("Sending ACK packet %d\n", pkt.seq_num);
+      printf("Sending ACK packet %d\n", pkt.ack_num);
       break;
     case ACK:
       printf("Sending ACK packet %d\n", pkt.ack_num);
-    break;
+      break;
 
   }
+  
   addrlen = sizeof(remaddr);
 	int bytes_sent;
 	bytes_sent = sendto(fd, &pkt, sizeof(pkt), 0, 
@@ -66,8 +68,6 @@ void TCP::transmit_pkt(tcp_packet &pkt)
 	if(bytes_sent <= 0)
 		fatal_error("sendto");
  
-
-  sequence_number++;
   
 }
 
@@ -85,10 +85,10 @@ void TCP::recv_pkt(tcp_packet &pkt)
       case DATA:
         printf("Receiving DATA packet %d\n", pkt.seq_num);
 
-        ack_number = pkt.seq_num+1;
         
         tcp_packet ack;
         make_packet(ack, ACK, "");
+        ack.ack_num = pkt.seq_num+1;
         transmit_pkt(ack);
         break;
       /*If it's an ACK packet, set the sequence number
@@ -97,14 +97,20 @@ void TCP::recv_pkt(tcp_packet &pkt)
         printf("Receiving ACK packet %d\n", pkt.ack_num);
         break;
       case SYN:
+        /*Received SYN, set the ack number to received 
+        sequence number +1*/
+        ack_number = seq_number+1;
         printf("Receiving SYN packet %d\n", pkt.seq_num);
         break;
       case SYNACK:
-        printf("Receiving ACK packet %d\n", pkt.ack_num);
+        ack_number = pkt.seq_num+1;
+        printf("Receiving SYNACK packet %d\n", pkt.ack_num);
         break;
     }
             
     }
+
+
     else
       perror("recv_pkt error");
 

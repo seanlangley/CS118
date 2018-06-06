@@ -15,6 +15,7 @@
 #include <ctime>
 #include <chrono>
 #include <thread>
+#include <sched.h>
 
 #include "TCP.h"
 using namespace std;
@@ -22,7 +23,7 @@ using namespace std;
 TCP_server::TCP_server()
 
 {	
-	sequence_number = 10;
+	seq_number = 10;
 	ack_number = 0;
 	all_acked = false;
 	window_size = 10;
@@ -56,12 +57,14 @@ void TCP_server::initiate_connection()
 	/*SYNchronize ack number to received seq_num+1*/
 	ack_number = pkt.seq_num+1;
 	/*Send the SYN-ACK, use initual sequence number 0*/
-	sequence_number = 0;
+	seq_number = 0;
 	make_packet(pkt, SYNACK, "");
 	/*send the ACK*/
 	transmit_pkt(pkt);
 	/*Wait for SYN-ACK*/
 	recv_pkt(pkt);
+	if(pkt.ack_num != seq_number+1)
+		fatal_error("ACK number not synchronized. Terminating connection");
 }
 
 string TCP_server::get_file_request()
@@ -90,8 +93,10 @@ void *receive_acks(void *arg)
 		serv->recv_pkt(ack);
 		serv->set_acks(ack.ack_num);
 		/***TODO: Change the base***/
+		serv->set_base(ack.ack_num);
 		if(ack.ack_num -1 == serv->get_num_packets())
 			serv->set_all_acked();
+		//printf("seqnum is %d\n", serv->get_seq_num());
 	}
 	return NULL;
 }
@@ -157,19 +162,23 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 
 
 		out_pkt = file_pkts[k];
+		/*If the packet is in the window, send the packet*/
 		if(out_pkt.seq_num < base + window_size)
 		{
 			packet_meta_data[k].time_sent = Time::now();
 			transmit_pkt(out_pkt);
 		}
+		/*Otherwise, wait until the base moves forward*/
 		else
 			while(true)
 			{
-				this_thread::sleep_for(chrono::milliseconds(250));
+
+				sched_yield();
 				if(out_pkt.seq_num < base + window_size)
 				{
 					packet_meta_data[k].time_sent = Time::now();
 					transmit_pkt(out_pkt);
+					break;
 				}
 			}
 
@@ -187,6 +196,7 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 	pthread_join(ack_thread, NULL);
 
 	pthread_kill(timeout_thread, 0);
+
 
 
 }
@@ -227,8 +237,6 @@ std::vector<tcp_packet> TCP_server::parse_file(string file)
 	{
 		if (file_size > data_size)
 		{	
-			
-
 			make_packet(pkt, DATA, file.substr(offset*data_size, data_size));
 			file_pkts.push_back(pkt);
 			

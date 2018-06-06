@@ -58,19 +58,30 @@ public:
 	void resize(char * arr);
 	void print_addr_info();
 	void set_acks(uint32_t acknum);
-	inline std::vector<packet_meta> *get_packet_meta()
-			{return &packet_meta_data;}
-	inline void set_all_acked()
-			{all_acked = true;}
-	
+
+	inline int get_seq_num(){
+		return seq_number;
+	}
+	inline std::vector<packet_meta> *get_packet_meta(){
+		return &packet_meta_data;
+	}
+	inline void set_all_acked(){
+		all_acked = true;
+	}
+	inline void set_base(int new_base){
+		base = new_base;
+	}
 protected:
 	/*Need 30720 sequence numbers, use uint_16 = 65535*/
-	uint16_t sequence_number;
+	uint16_t seq_number;
 	uint16_t ack_number;
 	int fd;
 	socklen_t addrlen;
 	struct sockaddr_in remaddr, hostaddr;
 	std::vector<packet_meta> packet_meta_data;
+
+
+
 	bool all_acked;
 	unsigned int window_size;
 	unsigned int base;

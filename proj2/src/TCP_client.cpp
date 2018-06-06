@@ -11,7 +11,7 @@ using namespace std;
 
 TCP_client::TCP_client(string IP)
 {
-	sequence_number = 0;
+	seq_number = 0;
 	ack_number = 0;
 	servIP = IP;
 	if ((fd=socket(AF_INET, SOCK_DGRAM, 0))==-1)
@@ -38,8 +38,17 @@ void TCP_client::initiate_connection()
 	/*SYN-ACK-SYNACK*/
 	tcp_packet pkt;
 	make_packet(pkt, SYN, "");
+	/*Tell the server our first sequence number is 0*/
+	pkt.seq_num = seq_number;
 	transmit_pkt(pkt);
 	recv_pkt(pkt);
+	
+	if(pkt.ack_num != seq_number+1)
+		fatal_error("ACK number not synchronized. Terminating connection");
+	
+	/*Set our ack number from the server's sequence number+1
+	This is done in recv_pkt*/
+	
     make_packet(pkt, ACK, "");
 	transmit_pkt(pkt);
 
@@ -51,6 +60,7 @@ void TCP_client::request_file(string file_name)
 	tcp_packet pkt;
 	vector<tcp_packet> received_packets;
 	make_packet(pkt, DATA, file_name);
+
 	transmit_pkt(pkt);
 	/*Wait for ACK*/
 	recv_pkt(pkt);

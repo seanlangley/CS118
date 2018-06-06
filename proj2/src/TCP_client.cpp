@@ -41,9 +41,10 @@ void TCP_client::initiate_connection()
 	/*Tell the server our first sequence number is 0*/
 	pkt.seq_num = seq_number;
 	transmit_pkt(pkt);
+	seq_number++;
 	recv_pkt(pkt);
-	
-	if(pkt.ack_num != seq_number+1)
+
+	if(pkt.ack_num != seq_number)
 		fatal_error("ACK number not synchronized. Terminating connection");
 	
 	/*Set our ack number from the server's sequence number+1
@@ -85,7 +86,7 @@ void TCP_client::request_file(string file_name)
 		recv_pkt(pkt);
 		received_packets.push_back(pkt);
 	}
-
+	printf("Received EOF\n");
 	/*Organize the packets by sequence number*/
 
 	vector<tcp_packet>::iterator it = received_packets.begin();
@@ -119,9 +120,11 @@ void TCP_client::teardown()
 		/*Wait for FIN*/
 	cout << "\n***Tearing down***\n";
 	tcp_packet pkt;
+	tcp_packet ack;
 	recv_pkt(pkt);
 	/*Send ACK*/
-	make_packet(pkt, ACK, "");
+	make_packet(ack, ACK, "");
+	ack.ack_num = pkt.seq_num+1;
 	transmit_pkt(pkt);
 	/*Send FIN*/
 	make_packet(pkt, FIN, "");

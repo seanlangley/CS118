@@ -23,6 +23,9 @@ void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
       seq_number++;
       memcpy(pkt.data, data.c_str(), pkt.len_data);
       break;
+    case FIN:
+      seq_number++;
+      break;
   }
 }
 
@@ -53,7 +56,7 @@ void TCP::transmit_pkt(tcp_packet &pkt)
       printf("Sending FIN packet %d\n", pkt.seq_num);
       break;
     case SYNACK:
-      printf("Sending ACK packet %d\n", pkt.ack_num);
+      printf("Sending SYN packet %d\n", pkt.seq_num);
       break;
     case ACK:
       printf("Sending ACK packet %d\n", pkt.ack_num);
@@ -105,6 +108,10 @@ void TCP::recv_pkt(tcp_packet &pkt)
       case SYNACK:
         ack_number = pkt.seq_num+1;
         printf("Receiving SYNACK packet %d\n", pkt.ack_num);
+        break;
+      case FIN:
+        printf("Receiving packet %d FIN\n", pkt.seq_num);
+        ack_number = pkt.seq_num+1;
         break;
     }
             

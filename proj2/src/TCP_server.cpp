@@ -61,9 +61,10 @@ void TCP_server::initiate_connection()
 	make_packet(pkt, SYNACK, "");
 	/*send the ACK*/
 	transmit_pkt(pkt);
+	seq_number++;
 	/*Wait for SYN-ACK*/
 	recv_pkt(pkt);
-	if(pkt.ack_num != seq_number+1)
+	if(pkt.ack_num != seq_number)
 		fatal_error("ACK number not synchronized. Terminating connection");
 }
 
@@ -206,6 +207,7 @@ void TCP_server::teardown()
 {
 
 	/*Send FIN*/
+	seq_number++;
 	cout << "\n***Tearing down***\n";
 	tcp_packet pkt;
 	make_packet(pkt, FIN, "");

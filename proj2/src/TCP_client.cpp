@@ -111,6 +111,7 @@ void TCP_client::request_file(string file_name)
 				break;
 			}
 	outfile.close();
+	
 
 }
 
@@ -119,8 +120,7 @@ void TCP_client::teardown()
 {
 		/*Wait for FIN*/
 	cout << "\n***Tearing down***\n";
-	tcp_packet pkt;
-	tcp_packet ack;
+	tcp_packet pkt, ack;
 	recv_pkt(pkt);
 	/*Send ACK*/
 	make_packet(ack, ACK, "");

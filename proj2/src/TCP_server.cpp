@@ -93,11 +93,9 @@ void *receive_acks(void *arg)
 	{
 		serv->recv_pkt(ack);
 		serv->set_acks(ack.ack_num);
-		/***TODO: Change the base***/
 		serv->set_base(ack.ack_num);
 		if(ack.ack_num -1 == serv->get_num_packets())
 			serv->set_all_acked();
-		//printf("seqnum is %d\n", serv->get_seq_num());
 	}
 	return NULL;
 }
@@ -112,7 +110,7 @@ void *manage_timeouts(void *arg)
 	ms RTO = ms(1000);
 	while(1)
 	{	
-		this_thread::sleep_for(chrono::milliseconds(3000));
+		this_thread::sleep_for(chrono::milliseconds(RTO));
 		TCP_server *serv = (TCP_server *) arg;
 		vector<packet_meta>::iterator it;
 		vector<packet_meta> *server_meta_data = serv->get_packet_meta();
@@ -160,8 +158,6 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 
 	for(int k = 0; k < file_pkts.size(); k++)
 	{
-
-
 		out_pkt = file_pkts[k];
 		/*If the packet is in the window, send the packet*/
 		if(out_pkt.seq_num < base + window_size)
@@ -172,8 +168,7 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 		/*Otherwise, wait until the base moves forward*/
 		else
 			while(true)
-			{
-
+			{ 
 				sched_yield();
 				if(out_pkt.seq_num < base + window_size)
 				{
@@ -182,8 +177,6 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 					break;
 				}
 			}
-
-			/***TODO: Wait until the base moves forward***/
 		
 	}
 

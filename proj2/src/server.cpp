@@ -22,8 +22,7 @@ int main(int argc, char **argv)
 	getfile(file, file_name);
   	
 	vector<tcp_packet> file_pkts;
-	
-	/*Should contain all the packets ready to send*/
+	/*Contains all the packets ready to send*/
 	file_pkts = tcp.parse_file(file);
 	vector<tcp_packet>::iterator it = file_pkts.begin();
 

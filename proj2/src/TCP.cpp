@@ -44,22 +44,22 @@ void TCP::transmit_pkt(tcp_packet &pkt)
    switch(pkt.flags)
   {
     case RETRANS: 
-      printf("Sending DATA packet %d Retransmission\n", pkt.seq_num);
+      printf("Sending DATA packet %d Retransmission\n", pkt.seq_num*MSS);
       break;
     case SYN:
-      printf("Sending SYN packet %d\n", pkt.seq_num);
+      printf("Sending SYN packet %d\n", pkt.seq_num*MSS);
       break;
     case DATA:
-     printf("Sending DATA packet %d\n", pkt.seq_num);
+     printf("Sending DATA packet %d\n", pkt.seq_num*MSS);
       break;
     case FIN:
-      printf("Sending FIN packet %d\n", pkt.seq_num);
+      printf("Sending FIN packet %d\n", pkt.seq_num*MSS);
       break;
     case SYNACK:
-      printf("Sending SYN packet %d\n", pkt.seq_num);
+      printf("Sending SYN packet %d\n", pkt.seq_num*MSS);
       break;
     case ACK:
-      printf("Sending ACK packet %d\n", pkt.ack_num);
+      printf("Sending ACK packet %d\n", (pkt.ack_num-1)*MSS+1);
       break;
 
   }
@@ -86,7 +86,7 @@ void TCP::recv_pkt(tcp_packet &pkt)
     {
       /*Every time you receive a data packet, send the ACK packet*/
       case DATA:
-        printf("Receiving DATA packet %d\n", pkt.seq_num);
+        printf("Receiving DATA packet %d\n", pkt.seq_num*MSS);
 
         
         tcp_packet ack;
@@ -97,20 +97,20 @@ void TCP::recv_pkt(tcp_packet &pkt)
       /*If it's an ACK packet, set the sequence number
       to ack_num*/
       case ACK:
-        printf("Receiving ACK packet %d\n", pkt.ack_num);
+        printf("Receiving ACK packet %d\n", (pkt.ack_num-1)*MSS+1);
         break;
       case SYN:
         /*Received SYN, set the ack number to received 
         sequence number +1*/
         ack_number = seq_number+1;
-        printf("Receiving SYN packet %d\n", pkt.seq_num);
+        printf("Receiving SYN packet %d\n", pkt.seq_num*MSS);
         break;
       case SYNACK:
         ack_number = pkt.seq_num+1;
-        printf("Receiving SYNACK packet %d\n", pkt.ack_num);
+        printf("Receiving SYNACK packet %d\n", (pkt.ack_num-1)*MSS+1);
         break;
       case FIN:
-        printf("Receiving packet %d FIN\n", pkt.seq_num);
+        printf("Receiving packet %d FIN\n", pkt.seq_num*MSS);
         ack_number = pkt.seq_num+1;
         break;
     }

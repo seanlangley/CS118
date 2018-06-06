@@ -4,7 +4,7 @@
 #include "helpers.h"
 #include <vector>
 
-#define BUFLEN 1024
+#define MSS 1024
 
 #define SERVICE_PORT  21235
 #define BUFSIZE 2048

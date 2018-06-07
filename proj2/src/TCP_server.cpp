@@ -16,9 +16,10 @@
 #include <chrono>
 #include <thread>
 #include <sched.h>
+#include <signal.h>
 
 #include "TCP.h"
-using namespace std;
+
 
 TCP_server::TCP_server()
 
@@ -40,10 +41,10 @@ TCP_server::TCP_server()
 	hostaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	//hostaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	hostaddr.sin_port = htons(SERVICE_PORT);
-	if (bind(fd, (struct sockaddr *)&hostaddr, sizeof(hostaddr)) < 0) {
-	fatal_error("bind failed");
+	bind(fd, (struct sockaddr *)&hostaddr, sizeof(hostaddr));
+
 	
-	}
+	
 }
 
 
@@ -110,8 +111,8 @@ void *manage_timeouts(void *arg)
 	{	
 		this_thread::sleep_for(chrono::milliseconds(RTO));
 		TCP_server *serv = (TCP_server *) arg;
-		vector<packet_meta>::iterator it;
-		vector<packet_meta> *server_meta_data = serv->get_packet_meta();
+		std::vector<packet_meta>::iterator it;
+		std::vector<packet_meta> *server_meta_data = serv->get_packet_meta();
 
 		for(it = server_meta_data->begin(); it != server_meta_data->end(); it++)
 		{
@@ -132,10 +133,10 @@ void *manage_timeouts(void *arg)
 	return NULL;
 }
 
-void TCP_server::send_file(vector<tcp_packet> file_pkts)
+void TCP_server::send_file(std::vector<tcp_packet> file_pkts)
 {
 
-	vector<tcp_packet>::iterator it = file_pkts.begin();
+	std::vector<tcp_packet>::iterator it = file_pkts.begin();
 	base = it->seq_num;
 	for(; it != file_pkts.end(); it++)
 		packet_meta_data.push_back(make_meta(&(*it)));
@@ -211,17 +212,17 @@ void TCP_server::teardown()
 
 
 
-std::vector<tcp_packet> TCP_server::parse_file(string file)
+std::vector<tcp_packet> TCP_server::parse_file(std::string file)
 {
 	unsigned long file_size = file.size();
 	int offset = 0;
 	int data_size = 1010;
-	vector<tcp_packet> file_pkts;
+	std::vector<tcp_packet> file_pkts;
 	tcp_packet pkt;
 
 
 	
-	vector<tcp_packet>::iterator it;
+	std::vector<tcp_packet>::iterator it;
 	while (file_size > 0)
 	{
 		if (file_size > data_size)

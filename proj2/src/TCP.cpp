@@ -7,7 +7,7 @@
 #include "TCP.h"
 using namespace std;
 
-void TCP::make_packet(tcp_packet &pkt, uint32_t flags, string data)
+void TCP::make_packet(tcp_packet &pkt, uint32_t flags, std::string data)
 {
   memset(&pkt, 0, sizeof(pkt));
   pkt.seq_num = seq_number;
@@ -150,7 +150,7 @@ void TCP::print_addr_info()
 
 void TCP::set_acks(uint32_t acknum)
 {
-  vector<packet_meta>::iterator it = packet_meta_data.begin();
+  std::vector<packet_meta>::iterator it = packet_meta_data.begin();
   for(; it != packet_meta_data.end(); it++)
     it->was_acked = true;
 }

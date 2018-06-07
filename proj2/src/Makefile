@@ -1,4 +1,4 @@
-CC=g++
+CC=g++ 
 CFLAGS = -g -Wall -Wextra -lpthread
 DIR = ./src
 

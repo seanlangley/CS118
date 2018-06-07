@@ -7,9 +7,9 @@
 #include <string.h>
 #include <unistd.h>
 #include "TCP.h"
-using namespace std;
 
-TCP_client::TCP_client(string IP)
+
+TCP_client::TCP_client(std::string IP)
 {
 	seq_number = 0;
 	ack_number = 0;
@@ -22,8 +22,9 @@ TCP_client::TCP_client(string IP)
 	hostaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	hostaddr.sin_port = htons(0);
 	/* bind it to all local addresses and pick any port number */
-	if (bind(fd, (struct sockaddr *)&hostaddr, sizeof(hostaddr)) < 0) 
-		fatal_error("bind failed");
+	bind(fd, (struct sockaddr *)&hostaddr, sizeof(hostaddr));
+	// if (bind(fd, (struct sockaddr *)&hostaddr, sizeof(hostaddr)) < 0) 
+	// 	fatal_error("bind failed");
 
 	memset((char *) &remaddr, 0, sizeof(remaddr));
 	remaddr.sin_family = AF_INET;
@@ -55,11 +56,11 @@ void TCP_client::initiate_connection()
 
 }
 
-void TCP_client::request_file(string file_name, char *ext)
+void TCP_client::request_file(std::string file_name, char *ext)
 {
 	printf("\n***Requesting file %s***\n", file_name.c_str());
 	tcp_packet pkt;
-	vector<tcp_packet> received_packets;
+	std::vector<tcp_packet> received_packets;
 	make_packet(pkt, DATA, file_name);
 
 	transmit_pkt(pkt);
@@ -72,7 +73,7 @@ void TCP_client::request_file(string file_name, char *ext)
 	uint8_t fin_flag = 0x11;
 
 	ofstream outfile;
-	string outname = "received_file.";
+	std::string outname = "received_file.";
 	outname.append(ext);
   	outfile.open(outname, ios::binary);
 
@@ -91,7 +92,7 @@ void TCP_client::request_file(string file_name, char *ext)
 	printf("Received EOF\n");
 	/*Organize the packets by sequence number*/
 
-	vector<tcp_packet>::iterator it = received_packets.begin();
+	std::vector<tcp_packet>::iterator it = received_packets.begin();
 
 
 	/*Find the file's lowest sequence number, 

@@ -17,14 +17,14 @@ int main(int argc, char **argv)
 {
 	TCP_server tcp;
 	tcp.initiate_connection();
-	string file_name = tcp.get_file_request();
-	string file;
+	std::string file_name = tcp.get_file_request();
+	std::string file;
 	getfile(file, file_name);
   	
-	vector<tcp_packet> file_pkts;
+	std::vector<tcp_packet> file_pkts;
 	/*Contains all the packets ready to send*/
 	file_pkts = tcp.parse_file(file);
-	vector<tcp_packet>::iterator it = file_pkts.begin();
+	std::vector<tcp_packet>::iterator it = file_pkts.begin();
 
 	tcp.send_file(file_pkts);
 	tcp.teardown();

@@ -12,18 +12,18 @@
 #include <vector>
 
 #include "TCP.h"
-using namespace std;
+
 
 
 int main(int argc, char *argv[])
 {
 	if(argc < 2)
 		fatal_error("No file name");
-	string file_name = argv[1];
+	std::string file_name = argv[1];
 	/*Get the file extension*/
 	strtok(argv[1], ".");
 	char *ext = strtok(NULL, "\0");
-	string servIP = "127.0.0.1";	
+	std::string servIP = "127.0.0.1";	
 	TCP_client tcp(servIP);
 	tcp.initiate_connection();
 	tcp.request_file(file_name, ext);

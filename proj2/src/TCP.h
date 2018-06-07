@@ -92,7 +92,7 @@ class TCP_client : public TCP{
 public:
 	TCP_client(std::string IP);
 	void initiate_connection();
-	void request_file(std::string file_name);
+	void request_file(std::string file_name, char *ext);
 	void teardown();
 private:
 	string servIP;

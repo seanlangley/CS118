@@ -55,7 +55,7 @@ void TCP_client::initiate_connection()
 
 }
 
-void TCP_client::request_file(string file_name)
+void TCP_client::request_file(string file_name, char *ext)
 {
 	printf("\n***Requesting file %s***\n", file_name.c_str());
 	tcp_packet pkt;
@@ -72,7 +72,9 @@ void TCP_client::request_file(string file_name)
 	uint8_t fin_flag = 0x11;
 
 	ofstream outfile;
-  	outfile.open("output.jpg", ios::binary);
+	string outname = "received_file.";
+	outname.append(ext);
+  	outfile.open(outname, ios::binary);
 
 	recv_pkt(pkt);
 	received_packets.push_back(pkt);
@@ -111,7 +113,7 @@ void TCP_client::request_file(string file_name)
 				break;
 			}
 	outfile.close();
-	
+
 
 }
 

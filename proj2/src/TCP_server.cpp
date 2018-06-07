@@ -87,8 +87,6 @@ void *receive_acks(void *arg)
 	size_t num_packs = (size_t) args->arg2;
 	tcp_packet ack;	
 
-	
-	
 	for(int k = 0; k < num_packs; k++)
 	{
 		serv->recv_pkt(ack);
@@ -180,7 +178,6 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 		
 	}
 
-
 	/*Wait for all packets to be acked*/	
 	while(all_acked == false)
 		this_thread::sleep_for(chrono::milliseconds(250));
@@ -188,10 +185,7 @@ void TCP_server::send_file(vector<tcp_packet> file_pkts)
 	make_packet(out_pkt, END, "");
 	transmit_pkt(out_pkt);
 	pthread_join(ack_thread, NULL);
-
 	pthread_kill(timeout_thread, 0);
-
-
 
 }
 

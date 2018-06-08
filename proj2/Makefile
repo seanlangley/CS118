@@ -6,7 +6,7 @@ check_c:
 	bash ./check_scripts/check_cli.sh
 
 dist:
-	tar -czvf proj2.tar.gz ../proj2
+	tar -czvf proj2.tar.gz *
 
 clean:
 	rm output.txt received_file.jpg & cd ./src && make clean

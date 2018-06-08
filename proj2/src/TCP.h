@@ -6,7 +6,7 @@
 #include <chrono>
 #define MSS 1024
 
-#define SERVICE_PORT  21235
+
 #define BUFSIZE 2048
 #define DATA 0x0
 #define SYN 0x02
@@ -79,7 +79,7 @@ protected:
 	socklen_t addrlen;
 	struct sockaddr_in remaddr, hostaddr;
 	std::vector<packet_meta> packet_meta_data;
-
+	int SERVICE_PORT;
 
 
 	bool all_acked;
@@ -90,7 +90,7 @@ protected:
 
 class TCP_client : public TCP{
 public:
-	TCP_client(std::string IP);
+	TCP_client(std::string IP, int portno);
 	void initiate_connection();
 	void request_file(std::string file_name, char *ext);
 	void teardown();
@@ -101,7 +101,7 @@ private:
 
 class TCP_server: public TCP{
 public:
-	TCP_server();
+	TCP_server(int portno);
 	void initiate_connection();
 	string get_file_request();
 	void send_file(vector<tcp_packet> file_pkts);

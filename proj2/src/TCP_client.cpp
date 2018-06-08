@@ -9,8 +9,9 @@
 #include "TCP.h"
 
 
-TCP_client::TCP_client(std::string IP)
+TCP_client::TCP_client(std::string IP, int portno)
 {
+	SERVICE_PORT = portno;
 	seq_number = 0;
 	ack_number = 0;
 	servIP = IP;

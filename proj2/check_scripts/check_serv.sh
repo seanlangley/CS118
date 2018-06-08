@@ -1,5 +1,5 @@
 #!/bin/bash
-./src/server
+./src/server 21235
 printf "\n*****RUNNING CHECK SCRIPT*****\n"
 rm output.diff
 diff doge.jpg output.jpg >> output.diff

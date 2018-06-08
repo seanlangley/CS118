@@ -5,7 +5,17 @@
 using namespace std;
 
 
+inline void cli_usage()
+{
+  printf("Usage: ./client [hostname] [server port] [file name]");
+  exit(1);
+}
 
+inline void serv_usage()
+{
+  printf("Usage: ./server [server port]");
+  exit(1);
+}
 
 inline void fatal_error(string msg)
 {

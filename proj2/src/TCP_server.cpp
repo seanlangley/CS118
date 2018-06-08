@@ -21,9 +21,10 @@
 #include "TCP.h"
 
 
-TCP_server::TCP_server()
+TCP_server::TCP_server(int portno)
 
 {	
+	SERVICE_PORT = portno;
 	seq_number = 10;
 	ack_number = 0;
 	all_acked = false;
@@ -106,7 +107,7 @@ void *manage_timeouts(void *arg)
 	If a packet wasn't acked, check its transmission time
 	If its time is greater than RTO, retransmit and
 	reset the transmission time*/
-	ms RTO = ms(1000);
+	ms RTO = ms(500);
 	while(1)
 	{	
 		this_thread::sleep_for(chrono::milliseconds(RTO));

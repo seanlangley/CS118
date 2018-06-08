@@ -15,7 +15,10 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-	TCP_server tcp;
+	if(argc < 2)
+		serv_usage();
+
+	TCP_server tcp(atoi(argv[1]));
 	tcp.initiate_connection();
 	std::string file_name = tcp.get_file_request();
 	std::string file;

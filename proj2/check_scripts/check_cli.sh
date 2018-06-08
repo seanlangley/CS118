@@ -1,2 +1,2 @@
 #!/bin/bash
-./src/client doge.jpg
+./src/client 127.0.0.1 21235 doge.jpg

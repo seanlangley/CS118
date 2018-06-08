@@ -9,4 +9,4 @@ dist:
 	tar -czvf proj2.tar.gz ../proj2
 
 clean:
-	rm output.txt & cd ./src && make clean
+	rm output.txt received_file.jpg & cd ./src && make clean
